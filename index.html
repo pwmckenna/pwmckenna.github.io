@@ -19,9 +19,12 @@ title: Patrick Williams
 
 <script type="text/javascript">
   var user = gh.user('pwmckenna');
-  user.repos(function(data) { 
-    for(var i = 0; i < data.repositories.length; i++) {
-      var repo = data.repositories[i];
+  user.repos(function(data) {
+    var repos = _.sortBy(data.repositories, function(repo) {
+      return (new Date(repo.pushed_at)).valueOf();
+    }); 
+    for(var i = 0; i < repos.length; i++) {
+      var repo = repos[i];
       if(!repo.fork) {
         var elem = document.createElement('li');
         elem.innerHTML = '<a href="http://github.com/pwmckenna/' + repo.name + '/">' + repo.name + ':</a>  ' + repo.description;
