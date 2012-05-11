@@ -21,7 +21,7 @@ title: Patrick Williams
   var user = gh.user('pwmckenna');
   user.repos(function(data) {
     var repos = _.sortBy(data.repositories, function(repo) {
-      return (new Date(repo.pushed_at)).valueOf();
+      return -(new Date(repo.pushed_at)).valueOf();
     }); 
     for(var i = 0; i < repos.length; i++) {
       var repo = repos[i];
