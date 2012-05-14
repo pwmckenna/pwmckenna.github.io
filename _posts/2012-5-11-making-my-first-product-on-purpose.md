@@ -12,7 +12,7 @@ In an effort to turn myself into a one man product creation wrecking ball, I've 
 * [http://facebook.com/ads/](http://facebook.com/ads/)  
 Easy way to vet ideas with your target audience.  
 * [http://thoughtbot.com/](http://thoughtbot.com/)  
-These guys seem to also thing of this art as science.  
+These guys seem to also think of this art as science.  
 * [http://www.trydesignlab.com/](http://www.trydesignlab.com/)  
 Learn design by doing  
 
