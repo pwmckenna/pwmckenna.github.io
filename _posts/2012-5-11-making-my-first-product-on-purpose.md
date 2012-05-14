@@ -9,7 +9,7 @@ On March 29th of this year (my birthday...glad I didn't skip work) I had the gre
 
 In an effort to turn myself into a one man product creation wrecking ball, I've done a bunch of supplemental research to augment my Cagan experience.  
   
-* [http://facebook.com/ads/](http://facebook.com/ads/)  
+* [http://www.facebook.com/advertising/](http://www.facebook.com/advertising/)  
 Easy way to vet ideas with your target audience.  
 * [http://thoughtbot.com/](http://thoughtbot.com/)  
 These guys seem to also think of this art as science.  
