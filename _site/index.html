@@ -12,6 +12,7 @@
    <link rel="stylesheet" href="/css/screen.css" type="text/css" media="screen, projection" />
 
   <script type="text/javascript" src="https://raw.github.com/fitzgen/github-api/master/github.js"></script>
+  <script type="text/javascript" src="http://documentcloud.github.com/underscore/underscore-min.js"></script>
 
    <!-- Typekit -->
    <script type="text/javascript" src="http://use.typekit.com/jpd0pfm.js"></script>
@@ -41,18 +42,22 @@ var WRInitTime=(new Date()).getTime();
 
   <h1>Open Source Projects</h1>
   <ul id="repos" class="posts">
-    <li><a href="http://github.com/pwmckenna/backbrace/">Backbrace:</a> Give your backbone.js apps the ability to stand taller.</li>
   </ul>
 </div>
 
 
 <script type="text/javascript">
   var user = gh.user('pwmckenna');
-  user.repos(function(data) { 
-    for(var i = 0; i < data.repositories.length; i++) {
-      if(!data.repositories[i].fork) {
+  user.repos(function(data) {
+    var repos = _.sortBy(data.repositories, function(repo) {
+      return -(new Date(repo.pushed_at)).valueOf();
+    }); 
+    for(var i = 0; i < repos.length; i++) {
+      var repo = repos[i];
+      if(!repo.fork) {
         var elem = document.createElement('li');
-        document.getElementsByClassName('posts');
+        elem.innerHTML = '<a href="http://github.com/pwmckenna/' + repo.name + '/">' + repo.name + ':</a>  ' + repo.description;
+        document.getElementById('repos').appendChild(elem);
       }
     }
   });
