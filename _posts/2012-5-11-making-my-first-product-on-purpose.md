@@ -15,6 +15,8 @@ Easy way to vet ideas with your target audience.
 These guys seem to also think of this art as science.  
 * [http://www.trydesignlab.com/](http://www.trydesignlab.com/)  
 Learn design by doing  
+* [http://bootstrapchallenge.com/](http://bootstrapchallenge.com/)  
+I like this guy's style  
 
   
 I'm in a pretty good place at work to give this a go. I'll lead the charge and let you know how it goes. 
