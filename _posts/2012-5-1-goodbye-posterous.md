@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Making My First Product On Purpose
+title: Goodbye Posterous
 ---
 
 #{{ page.title }}
