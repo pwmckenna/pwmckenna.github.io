@@ -1,3 +1,10 @@
+---
+layout: post
+title: Startup Ingredients
+---
+
+#{{ page.title }}
+
 Hosting my blog on github means I don't think twice about loading in js dependencies to do something awesome. I can just do it! 
 
 Why link to twitter when you can use their handsome [Web Intents?](https://dev.twitter.com/docs/intents)
