@@ -12,8 +12,9 @@ Along comes [Backbrace.js](https://backbrace.github.com/pwmckenna/).
 Backbone enables jQuery-esque *live* calls to detect adds of Models or Collections regardless of how deep in the tree they are, regardless of whether any intermediate level exists yet.
 
 For example:
+
 		var model = new Backbone.Model;
-		var callback = function(val) {
+		var callback = function(d, c, b, a) {
 			console.log('I only care about d in c in b in a...nothing in between');
 		};
 		model.live('a b c d', callback);
@@ -25,4 +26,4 @@ For example:
 
 		//Your callback was just called!
 
-Currently the main limitation is that the callbacks only get the leaf value, while the entire series (especially in the cases of wildcards) would be useful. Coming soon...
+Originally the callback only provided the leaf node, but it turned out to be a bit of a pain point to not have the branches as well, so I implemented that between the code example and this sentence. Enjoy!
