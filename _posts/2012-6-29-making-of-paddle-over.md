@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Twitter Link
+title: The Making of PaddleOver
 ---
 
 #{{ page.title }}
