@@ -9,7 +9,7 @@ For a bit of background, see [Building Torque](../../../2012/06/29/building-torq
 
 __Torque__
 
-An important tidbit about the Torque api that led to building [PaddleOver](http://paddleover.com), is the fact that you can use the Backbone library to connect to your local machine...or any other machine in the world. For instance, if you give me access, I can open a web page and play with files on your computer the exact same way that I could on my own computer. For the developer, it makes no difference.
+An important tidbit about the Torque api that led to building [PaddleOver](http://paddleover.com), is the fact that you can use the [btapp.js](http://github.com/bittorrenttorque/btapp) Backbone library to connect to your local machine...or any other machine in the world. For instance, if you give me access, I can open a web page and play with files on your computer the exact same way that I could on my own computer. For the developer, it makes no difference.
 
 __Engineer + Beer + Btapp.js__
 
