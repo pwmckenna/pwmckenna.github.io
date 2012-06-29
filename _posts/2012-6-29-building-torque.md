@@ -18,7 +18,7 @@ In those six months, we built out the Torque executable, the plugin that lets yo
 		var btapp = new Btapp;
 		btapp.connect();
 
-At the same time we were all being "Inspired" by [Marty Cagan](https://twitter.com/intent/user?screen_name=cagan), and even though we're not building a consumer product, we made user testing a priority. We've held a meetup (thank you SFJS!), supported the release of a product built on top of our api, and helped other BitTorrent devs with smaller projects for our 2 day coding paloozas. I would highly recommend all of those things for those building out an api, as it really is impossible to see all the sharp edges without fresh eyes. 
+At the same time we were all being "Inspired" by [Marty Cagan](https://twitter.com/intent/user?screen_name=cagan), and even though we're not building a consumer product, we made user testing a priority. We've held a meetup (thank you [SFJS](http://www.meetup.com/jsmeetup/)!), supported the release of a product built on top of our api, and helped other BitTorrent devs with smaller projects for our 2 day coding paloozas. I would highly recommend all of those things for those building out an api, as it really is impossible to see all the sharp edges without fresh eyes. 
 
 I think what we have now is a pretty powerful tool for anyone that wants to move files around the web. All we needed was a way to show it off...
 
