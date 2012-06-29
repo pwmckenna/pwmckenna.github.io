@@ -13,7 +13,7 @@ An important tidbit about the Torque api that led to building [PaddleOver](http:
 
 __Engineer + Beer + Btapp.js__
 
-Originally I wanted to write a file distribution management tool that would allow software companies to distribute files to their servers [the same way that Facebook does.](http://torrentfreak.com/facebook-uses-bittorrent-and-they-love-it-100625/) I was also getting pretty obsessed with [Bret Victor's]() work at the time, and thought that I'd take a swing at building an interface that had a singular goal of being easy to use.
+Originally I wanted to write a file distribution management tool that would allow software companies to distribute files to their servers [the same way that Facebook does.](http://torrentfreak.com/facebook-uses-bittorrent-and-they-love-it-100625/) I was also getting pretty obsessed with [Bret Victor's]() work at the time, and thought that I'd take a swing at building an interface that had a singular goal of being easy to use. All it was suppose to do was allow any of the involved parties to move files from one computer to another.
 
 After taking advantage of the keg here at BitTorrent for a bit one night, I started trolling around domain registrars and scored the awesome domain [http://beamitover.com](). I was starting to envision a site simple enough to be used on a touch screen, with the asthetic of early Star Trek control panels. As this site was going to be showing off our api to other software devs, a sci-fi theme seem appropriate.
 
