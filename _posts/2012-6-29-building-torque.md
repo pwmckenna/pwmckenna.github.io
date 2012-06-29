@@ -1,6 +1,6 @@
 ---
 layout: post
-title: The Making of PaddleOver
+title: Building Torque
 ---
 
 #{{ page.title }}
