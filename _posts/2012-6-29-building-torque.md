@@ -15,8 +15,10 @@ Six months ago, Kyle and I created a new team with the goal of building an api o
 
 In those six months, we built out the Torque executable, the plugin that lets you assume that everything is ready to go, and a Backbone.js library that gives you access in two lines of code. 
 
-		var btapp = new Btapp;
-		btapp.connect();
+{% highlight javascript %}
+var btapp = new Btapp;
+btapp.connect();
+{% endhighlight %}
 
 At the same time we were all being "Inspired" by [Marty Cagan](https://twitter.com/intent/user?screen_name=cagan), and even though we're not building a consumer product, we made user testing a priority. We've held a meetup (thank you [SFJS](http://www.meetup.com/jsmeetup/)!), supported the release of a product built on top of our api, and helped other BitTorrent devs with smaller projects for our 2 day coding paloozas. I would highly recommend all of those things for those building out an api, as it really is impossible to see all the sharp edges without fresh eyes. 
 
