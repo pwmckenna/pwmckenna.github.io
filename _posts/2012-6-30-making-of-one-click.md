@@ -19,24 +19,24 @@ Writing Chome extensions is actually fairly simple. Despite my failure to delive
 
 Like every other app, I started with the following [btapp.js](http://github.com/bittorrenttorque/btapp) code:
 {% highlight javascript %}
-	var btapp = new Btapp;
-	btapp.connect();
+var btapp = new Btapp;
+btapp.connect();
 {% endhighlight %}
 
 Then when someone was served back the torrent mime type, I'd grab the url and load the torrent into the Torque client like so:
 {% highlight javascript %}
-	btapp.get('add').torrent(url);
+btapp.get('add').torrent(url);
 {% endhighlight %}
 
 There are a couple ways that the downloads could have been handled due to torrents potentially representing many files. In the end, I just opened tabs pointing to the urls for the specific files being served by the Torque client, and forced a *Content-Dispostion* header to ensure they were immediately converted to file downloads.
 
 Creating a tab for each file in the torrent looked a little bit like the following:
 {% highlight javascript %}
-	torrent.get('file').each(function(file) {
-		var url = file.get('properties').get('streaming_url');
-		chrome.tabs.create({
-	        url: url,
-	        selected: false
-	    });
+torrent.get('file').each(function(file) {
+	var url = file.get('properties').get('streaming_url');
+	chrome.tabs.create({
+	url: url,
+	selected: false
 	});
+});
 {% endhighlight %}
