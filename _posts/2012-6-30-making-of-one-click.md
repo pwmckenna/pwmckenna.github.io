@@ -39,4 +39,5 @@ torrent.get('file').each(function(file) {
 	selected: false
 	});
 });
+
 {% endhighlight %}

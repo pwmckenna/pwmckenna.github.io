@@ -5,10 +5,6 @@ title: Building Torque
 
 #{{ page.title }}
 
-__TLDR:__ 
-We're building web apps with [btapp.js](http://github.com/bittorrenttorque/btapp)  
-Our other stuff is here: [http://github.com/bittorrenttorque]()
-
 __In The Beginning__
 
 Six months ago, Kyle and I created a new team with the goal of building an api on top of our existing client that would make it simple for web developers to interact with our torrent clients. At the time, I was working on the team that develops uTorrent, and Kyle was a one man army in charge of our Remote feature. And while we wanted to utilize our existing client, the ultimate goal was for web devs to simply load in our Backbone library and write code that assumed that the client was installed, running, and ready for action. And while we're far from done, we have a library that I enjoy building my own apps on top of.
@@ -26,3 +22,6 @@ I think what we have now is a pretty powerful tool for anyone that wants to move
 
 Well hello there [PaddleOver](../../../2012/06/29/making-of-paddle-over.html)...
 
+__TLDR:__ 
+We're building web apps with [btapp.js](http://github.com/bittorrenttorque/btapp)  
+Our other stuff is here: [http://github.com/bittorrenttorque]()
