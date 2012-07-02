@@ -19,6 +19,6 @@ After taking advantage of the keg here at BitTorrent for a bit one night, I star
 
 __But then we built it.__ And it was so fun and easy to use. And I realized that it might be the first thing I've ever built that my mom might enjoy using. I couldn't miss this opportunity.
 
-The redesign started with a gorgeous background by [James Gately](http://www.istockphoto.com/user_view.php?id=2715153). From there it was simply a matter of adding in a few easter eggs, sliding in some [Robv](https://twitter.com/intent/user?screen_name=thisisrobv) approved wood panelling and calling it a day. The site is quite simple both in terms of the UI and whats happening under the hood. My hope is that there's a javascript dev out there that is inspired enough to take a peek at [btapp.js](http://github.com/bittorrenttorque/btapp) and build something themselves.
+The redesign started with a gorgeous background by [James Gately](http://www.istockphoto.com/user_view.php?id=2715153). From there it was simply a matter of adding in a few easter eggs, sliding in some [Rob V.](https://twitter.com/intent/user?screen_name=thisisrobv) approved wood panelling and calling it a day. The site is quite simple both in terms of the UI and whats happening under the hood. My hope is that there's a javascript dev out there that is inspired enough to take a peek at [btapp.js](http://github.com/bittorrenttorque/btapp) and build something themselves.
 
 And I'll tell you what. Build something awesome and I'll just give you [http://beamitover.com](). It deserves a good home.
