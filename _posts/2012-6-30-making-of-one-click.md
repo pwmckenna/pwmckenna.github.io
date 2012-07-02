@@ -13,7 +13,11 @@ During a BitTorrent Palooza (2 day hackathons) several months ago, I talked Art 
 
 The thrill of victory wasn't able to mask a few glaring limitations however. With the palooza over, we needed to justify it as a product, and the combination of being Windows only and quite invasive was too much to overcome. So OneClick was shelved. 
 
-Time passed. Kyle and I continued to build out the [btapp.js](http://github.com/bittorrenttorque/btapp) library that sits on top of our Torque plugin/client, in preparation for the release of our public api. Then late afternoon some Friday, I stumbled upon the Chrome Extension [webRequest](http://code.google.com/chrome/extensions/webRequest.html) api that gives you access to all the http headers for requests in Chrome. Which meant that not only could I filter for .torrent file requests, but I could go one step farther and just wait for a server to serve up a file with the *application/x-bittorrent* mime type before springing into action.  I immediately slowed my ascent up Balmers peek, declined the co-worker invite to Zeitgeist (apparently it was quite the evening), and dove in. 
+Time passed. Kyle and I continued to build out the [btapp.js](http://github.com/bittorrenttorque/btapp) library that sits on top of our Torque plugin/client, in preparation for the release of our public api. 
+
+For a bit of background on Torque, read [Building Torque](../../../2012/06/29/building-torque.html)...
+
+Then late afternoon some Friday, I stumbled upon the Chrome Extension [webRequest](http://code.google.com/chrome/extensions/webRequest.html) api that gives you access to all the http headers for requests in Chrome. Which meant that not only could I filter for .torrent file requests, but I could go one step farther and just wait for a server to serve up a file with the *application/x-bittorrent* mime type before springing into action.  I immediately slowed my ascent up Balmers peek, declined the co-worker invite to Zeitgeist (apparently it was quite the evening), and dove in. 
 
 Writing Chome extensions is actually fairly simple. Despite my failure to deliver on the foolishly bold claim I made to Art, saying that I'd have OneClick rewritten as a extension before he left for the day, it really wasn't too much work. Their [getting started page](http://code.google.com/chrome/extensions/getstarted.html) is really precise, and their documentation and examples are really thorough, especially for [webRequests](http://code.google.com/chrome/extensions/webRequest.html).
 
