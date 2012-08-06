@@ -21,4 +21,7 @@ You can of course enjoy the same torrent content using just the info hash:
 
 http://onehash.com#DFD0A2D3D2AD601388900A344507BA368D56ACE2
 
-There are still some kinks to be worked out, as we're still fine tuning Torque's streaming capabilities, and HTML5 video/audio support remains even in flux, but its easy to see the potential here.
+There are still some kinks to be worked out, as we're still fine tuning Torque's streaming capabilities, and HTML5 video/audio support remains ever in flux, but its easy to see the potential here.
+
+
+What happens when we get this stuff working as well as other streaming services? Will Louis C.K. become the rule, instead of the exception, cutting out middle men and finally getting artists that huge slice of pie that they've deserved all along?
