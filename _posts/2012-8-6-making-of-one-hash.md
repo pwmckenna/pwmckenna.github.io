@@ -5,7 +5,7 @@ title: The Making of OneHash
 
 #{{ page.title }}
 
-OneHash allows you to stream audio and video directly from a torrent swarm. No servers. No bandwidth caps. No size limits.
+OneHash allows you to stream audio and video directly from a torrent swarm.
 
 Take torrent information of any variety (torrent file, magnet link, info hash) and just put it after #, and the site will start to download the content, and let you watch or listen in your browser. 
 
