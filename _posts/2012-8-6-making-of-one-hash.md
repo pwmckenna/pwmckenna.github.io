@@ -24,6 +24,5 @@ You can of course enjoy the same torrent content using just the info hash:
 There are still some kinks to be worked out, as we're still fine tuning Torque's streaming capabilities, and HTML5 video/audio support remains ever in flux, but its easy to see the potential here.
 
 
-What happens when we get this stuff working as well as other streaming services? Will Louis C.K. become the rule, instead of the exception, cutting out middle men and finally getting artists that huge slice of pie that they've deserved all along? If you can stream from torrent swarms, there won't even be the hosting/bandwidth costs that C.K. had to deal with. 
+What happens when we get this stuff working as well as other streaming services? Will Louis C.K. become [the rule](http://theoatmeal.com/comics/music_industry), instead of the exception, cutting out middle men and finally getting artists that huge slice of pie that they've deserved all along? If you can stream from torrent swarms, there won't even be the hosting/bandwidth costs that C.K. had to deal with. 
 
-http://theoatmeal.com/comics/music_industry
