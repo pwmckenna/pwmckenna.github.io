@@ -30,4 +30,4 @@ Maybe we'll know sooner than later. Like every other [Torque app](http://torque.
 
 I'd love to know what you think, and if you're a programmer hoping to get started, feed free to drop me a line. I'm happy to help.
 
-@pwmckenna
+<a href="https://twitter.com/intent/user?screen_name=pwmckenna">@pwmckenna</a>
