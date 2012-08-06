@@ -26,4 +26,8 @@ There are still some kinks to be worked out, as we're still fine tuning Torque's
 
 What happens when we get this stuff working as well as other streaming services? Will Louis C.K. become [the rule](http://theoatmeal.com/comics/music_industry), instead of the exception, cutting out middle men and finally getting artists that huge slice of pie that they've deserved all along? If you can stream from torrent swarms, there won't even be the hosting/bandwidth costs that C.K. had to deal with. 
 
-Maybe we'll know sooner than later. Like every other [Torque app](http://torque.bittorrent.com) that we've written, we've made it [open source](https://github.com/bittorrenttorque/onehash.com) for other programmers to improve and use to their liking. And for the folks that are curious about the torrenting that's happening under the hood, you can expand the torrent section to inspect the usual info, open the folder on disk or delete the torrent if you're done with it.
+Maybe we'll know sooner than later. Like every other [Torque app](http://torque.bittorrent.com) that we've written, we've made it [open source](https://github.com/bittorrenttorque/onehash.com) for other programmers to improve and use to their liking. And for the folks that are curious about the torrenting that's happening under the hood, you can expand the torrent section to inspect the usual info, open the folder on disk or delete the torrent if you're done with it. There's an ongoing conversion about torrent persistance when using torque apps, so hopefully this will provide greater insight for our users.
+
+I'd love to know what you think, and if you're a programmer hoping to get started, feed free to drop me a line. I'm happy to help.
+
+@pwmckenna
