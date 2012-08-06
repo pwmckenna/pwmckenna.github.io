@@ -7,7 +7,7 @@ title: The Making of OneHash
 
 OneHash allows you to stream the audio and video directly from a torrent swarm. 
 
-Take torrent information of any variety (torrent file, magnet link, info hash) and just put it after #, and the site will start to download the content, and let you watch or listen in your browse. 
+Take torrent information of any variety (torrent file, magnet link, info hash) and just put it after #, and the site will start to download the content, and let you watch or listen in your browser. 
 
 Take the DJ Shadow BitTorrent bundle for example (definitely worth a listen). This is the url to the torrent file:
 
