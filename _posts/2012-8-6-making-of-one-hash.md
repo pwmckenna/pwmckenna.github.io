@@ -17,6 +17,8 @@ To listen using OneHash, just append the torrent information after #:
 
 [http://onehash.com#http://featuredcontent.utorrent.com/torrents/DJShadow-BitTorrent-b.torrent](http://onehash.com#http://featuredcontent.utorrent.com/torrents/DJShadow-BitTorrent-b.torrent)
 
+<img height="300px" src="../../../images/onehash.png" />
+
 You can of course enjoy the same torrent content using just the info hash:
 
 [http://onehash.com#DFD0A2D3D2AD601388900A344507BA368D56ACE2](http://onehash.com#DFD0A2D3D2AD601388900A344507BA368D56ACE2)
