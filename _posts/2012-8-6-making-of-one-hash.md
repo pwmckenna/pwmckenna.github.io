@@ -26,12 +26,21 @@ var url = btapp.get('torrent').at(0).get('file').at(0).get('properties').get('st
 
 This url is served by the underlying Torque torrent client, which continues to download the torrent and pump the bits up to your player sequentially. And while a buffer is prioritized to allow for a better streaming experience, under the hood the torrent is still downloaded rarest-first, as much as performance allows.
 
-Works with both video and audio, though there's media type checking, so you need to examine the file extensions to decide which dom element type to use.
+Works with both video and audio, though there's no media type checking, so you need to examine the file extensions to decide which dom element type to use.
 ```
-btapp.live('torrent * file * properties streaming_url', function(url) {
-var video = $('<video></video>');
-video.attr('src', url);
-$('body').append(video);
+btapp.live('torrent * file * properties streaming_url', function(url, properties) {
+    //get the full name of the file
+    var ext = properties.get('name');
+    //strip off the extension
+    var ext = name.substr(name.lastIndexOf('.') + 1);
+    
+    //lets only support mp4 for now
+    if(ext === 'mp4') {
+        var video = $('<video></video>');
+        video.attr('src', url);
+        $('body').append(video);
+    }
+});
 ```
 
 It should be noted that this streaming url can be used for normal browser downloads as well. This means that you could write a back-up service where everyone had bits and pieces of everything, but when someone clicked a link on your page to download their content, it would download into their browser like a normal download.
