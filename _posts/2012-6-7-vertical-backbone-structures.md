@@ -14,18 +14,18 @@ Backbone enables jQuery-esque *live* calls to detect adds of Models or Collectio
 For example:
 
 {% highlight javascript %}
-		var model = new Backbone.Model;
-		var callback = function(d, c, b, a) {
-			console.log('I only care about d in c in b in a...nothing in between');
-		};
-		model.live('a b c d', callback);
+var model = new Backbone.Model;
+var callback = function(d, c, b, a) {
+	console.log('I only care about d in c in b in a...nothing in between');
+};
+model.live('a b c d', callback);
 
-		model.set('a', new Backbone.Model);
-		model.get('a').set('b' new Backbone.Model);
-		model.get('a').get('b').set('c', new Backbone.Model);
-		model.get('a').get('b').get('c').set('d', new Backbone.Model);
+model.set('a', new Backbone.Model);
+model.get('a').set('b' new Backbone.Model);
+model.get('a').get('b').set('c', new Backbone.Model);
+model.get('a').get('b').get('c').set('d', new Backbone.Model);
 
-		//Your callback was just called!
+//Your callback was just called!
 {% endhighlight %}
 
 Originally the callback only provided the leaf node, but it turned out to be a bit of a pain point to not have the branches as well, so I implemented that between the code example and this sentence. Enjoy!
