@@ -43,7 +43,14 @@ btapp.live('torrent * file * properties streaming_url', function(url, properties
 });
 ```
 
-It should be noted that this streaming url can be used for normal browser downloads as well. This means that you could write a back-up service where everyone had bits and pieces of everything, but when someone clicked a link on your page to download their content, it would download into their browser like a normal download.
+It should be noted that this streaming url can be used for normal browser downloads as well. This means that you could write a back-up service where everyone had bits and pieces of everything, but when someone clicked a link on your page to download their content, it would download into their browser like a normal download. The code to add those links to your page might look somethis like the following:
+```js
+btapp.live('torrent * file * properties streaming_url', function(streaming_url) {
+    $('body').append('<a href="' + streaming_url + '"></a>')
+});
+```
+
+Well, that's about it. Normal http streaming/downloading from a url that's actually doing torrent downloads for you. Pretty cool and hopefully helpful to someone.
 
 I'd love to hear your thoughts, and if you're a programmer hoping to get started, feed free to drop me a line. I'm happy to help.
 
