@@ -62,4 +62,4 @@ I'd love to hear your thoughts, and if you're a programmer hoping to get started
 
 <a href="https://twitter.com/intent/user?screen_name=pwmckenna">@pwmckenna</a>
 
-<img height="300px" src="../../../images/sqlbbq.png" />
+<img width="100%" src="../../../images/sqlbbq.png" />
