@@ -11,18 +11,18 @@ OneHash is a demo to show off how to stream torrent content to your browser, wit
 
 If you're using [btapp.js](https://github.com/bittorrenttorque/btapp), then you may have noticed that each file in a torrent has a property called *streaming_url*. Assuming you've included [backbrace](http://github.com/bittorrenttorque/backbrace), this is simple to access despite being deeply nested.
 
-```js
+
 var btapp = new Btapp();
 btapp.connect();
 
 btapp.live('torrent * file * properties streaming_url', function(url) {
     //url can be used anywhere you might use a web server url to stream media
 });
-```
+
 Alternatively we can get the streaming url from the first file in the first torrent (assuming we have one added)
-```js
+
 var url = btapp.get('torrent').at(0).get('file').at(0).get('properties').get('streaming_url');
-```
+
 
 This url is served by the underlying Torque torrent client, which continues to download the torrent and pump the bits up to your player sequentially. And while a buffer is prioritized to allow for a better streaming experience, under the hood the torrent is still downloaded rarest-first, as much as performance allows.
 
