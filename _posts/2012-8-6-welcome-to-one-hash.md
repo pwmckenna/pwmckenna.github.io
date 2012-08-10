@@ -21,7 +21,7 @@ To listen using OneHash, just append the torrent information after #:
 
 You can of course enjoy the same torrent content using just the info hash:
 
-<a href="http://onehash.com#DFD0A2D3D2AD601388900A344507BA368D56ACE2>http://onehash.com#DFD0A2D3D2AD601388900A344507BA368D56ACE2</a>
+<a href="http://onehash.com#DFD0A2D3D2AD601388900A344507BA368D56ACE2">http://onehash.com#DFD0A2D3D2AD601388900A344507BA368D56ACE2</a>
 
 There are still some kinks to be worked out, as we're still fine tuning Torque's streaming capabilities, and HTML5 video/audio support remains ever in flux, but its easy to see the potential here.
 
