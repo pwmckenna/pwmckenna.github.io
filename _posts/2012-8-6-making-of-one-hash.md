@@ -5,7 +5,7 @@ title: The Making of OneHash
 
 #{{ page.title }}
 
-<img height="400px" src="../../../images/sqlbbq.png" />
+<img width="100%" src="../../../images/sqlbbq.png" />
 
 OneHash allows you to stream audio and video directly from a torrent swarm.
 
