@@ -14,7 +14,7 @@ If you're using [btapp.js](https://github.com/bittorrenttorque/btapp), then you 
 ```
 var btapp = new Btapp();  
 btapp.connect();
-``
+```
 
 btapp.live('torrent * file * properties streaming_url', function(url) {
     //url can be used anywhere you might use a web server url to stream media
