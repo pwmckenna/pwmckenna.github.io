@@ -61,3 +61,5 @@ Well, that's about it. Normal http streaming/downloading from a url that's actua
 I'd love to hear your thoughts, and if you're a programmer hoping to get started, feel free to drop me a line. I'm happy to help.
 
 <a href="https://twitter.com/intent/user?screen_name=pwmckenna">@pwmckenna</a>
+
+<img height="300px" src="../../../images/sqlbbq.png" />
