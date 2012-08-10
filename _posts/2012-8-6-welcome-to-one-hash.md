@@ -11,17 +11,17 @@ Take torrent information of any variety (torrent file, magnet link, info hash) a
 
 Take the DJ Shadow BitTorrent bundle for example (definitely worth a listen). This is the url to the torrent file:
 
-[http://featuredcontent.utorrent.com/torrents/DJShadow-BitTorrent-b.torrent](http://featuredcontent.utorrent.com/torrents/DJShadow-BitTorrent-b.torrent)
+[__http://featuredcontent.utorrent.com/torrents/DJShadow-BitTorrent-b.torrent__](http://featuredcontent.utorrent.com/torrents/DJShadow-BitTorrent-b.torrent)
 
 To listen using OneHash, just append the torrent information after #:
 
-[http://onehash.com#http://featuredcontent.utorrent.com/torrents/DJShadow-BitTorrent-b.torrent](http://onehash.com#http://featuredcontent.utorrent.com/torrents/DJShadow-BitTorrent-b.torrent)
+[http://onehash.com#__http://featuredcontent.utorrent.com/torrents/DJShadow-BitTorrent-b.torrent__](http://onehash.com#http://featuredcontent.utorrent.com/torrents/DJShadow-BitTorrent-b.torrent)
 
 <img width="100%" src="../../../images/onehash.png" />
 
 You can of course enjoy the same torrent content using just the info hash:
 
-[http://onehash.com#DFD0A2D3D2AD601388900A344507BA368D56ACE2](http://onehash.com#DFD0A2D3D2AD601388900A344507BA368D56ACE2)
+[http://onehash.com#__DFD0A2D3D2AD601388900A344507BA368D56ACE2__](http://onehash.com#DFD0A2D3D2AD601388900A344507BA368D56ACE2)
 
 There are still some kinks to be worked out, as we're still fine tuning Torque's streaming capabilities, and HTML5 video/audio support remains ever in flux, but its easy to see the potential here.
 
