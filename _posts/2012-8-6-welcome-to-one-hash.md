@@ -5,8 +5,6 @@ title: Welcome to OneHash
 
 #{{ page.title }}
 
-<img width="100%" src="../../../images/sqlbbq.png" />
-
 OneHash allows you to stream audio and video directly from a torrent swarm.
 
 Take torrent information of any variety (torrent file, magnet link, info hash) and just put it after #, and the site will start to download the content, and let you watch or listen in your browser. 
@@ -19,7 +17,7 @@ To listen using OneHash, just append the torrent information after #:
 
 [http://onehash.com#http://featuredcontent.utorrent.com/torrents/DJShadow-BitTorrent-b.torrent](http://onehash.com#http://featuredcontent.utorrent.com/torrents/DJShadow-BitTorrent-b.torrent)
 
-<img height="300px" src="../../../images/onehash.png" />
+<img width="100%" src="../../../images/onehash.png" />
 
 You can of course enjoy the same torrent content using just the info hash:
 
