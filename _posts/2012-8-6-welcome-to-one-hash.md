@@ -30,6 +30,6 @@ What happens when we get this stuff working as well as other streaming services?
 
 Maybe we'll know sooner than later. Like every other [Torque app](http://torque.bittorrent.com) that we've written, we've made it [open source](https://github.com/bittorrenttorque/onehash.com) for other programmers to improve and use to their liking. And for the folks that are curious about the torrenting that's happening under the hood, you can expand the torrent section to inspect the usual info, open the folder on disk or delete the torrent if you're done with it. There's an ongoing conversion about torrent persistance when using torque apps, so hopefully this will provide greater insight for our users.
 
-I'd love to know what you think, and if you're a programmer hoping to get started, feed free to drop me a line. I'm happy to help.
+I'd love to know what you think, and if you're a programmer hoping to get started, feel free to drop me a line. I'm happy to help.
 
 <a href="https://twitter.com/intent/user?screen_name=pwmckenna">@pwmckenna</a>
