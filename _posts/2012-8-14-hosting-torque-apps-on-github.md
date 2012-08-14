@@ -5,7 +5,7 @@ title: Hosting Torque Apps on GitHub For Fun (and Profit?)
 
 #{{ page.title }}
 
-__TL;DR:__ Go to [https://github.com/bittorrenttorque/onehash.com](https://github.com/bittorrenttorque/onehash.com) and hit the Fork button. In minutes, the entire site will be publicly hosted via your [github pages](http://pages.github.com/) at [https://YOURGITHUBUSERNAME.github.com/onehash.com](https://YOURGITHUBUSERNAME.github.com/onehash.com).  
+__TL;DR:__ Go to [https://github.com/bittorrenttorque/onehash.com](https://github.com/bittorrenttorque/onehash.com) and hit the Fork button. In minutes, the entire site will be publicly hosted via your [github pages](https://help.github.com/articles/what-are-github-pages) at [https://YOURGITHUBUSERNAME.github.com/onehash.com](https://YOURGITHUBUSERNAME.github.com/onehash.com).  
 __WARNING:__ Either delete the CNAME file, or delete the contents of it. GitHub pages hosting will fail otherwise.
 <p style="margin:0px;font-size:10px;font-variant:small-caps;">* I've forked the onehash.com repo into my personal account and it is now hosted at <a href="https://pwmckenna.github.com/onehash.com">https://pwmckenna.github.com/onehash.com</a></p>
 <p style="margin:0px;font-size:10px;font-variant:small-caps;">* This works for most <a href="https://github.com/bittorrenttorque">https://github.com/bittorrenttorque</a> repositories. Try <a href="https://github.com/bittorrenttorque/paddleover.com">https://github.com/bittorrenttorque/paddleover.com</a></p>
