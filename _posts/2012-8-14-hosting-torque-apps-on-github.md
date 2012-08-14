@@ -7,8 +7,8 @@ title: Hosting Torque Apps on GitHub For Fun (and Profit?)
 
 __TL;DR:__ Go to [https://github.com/bittorrenttorque/onehash.com](https://github.com/bittorrenttorque/onehash.com) and hit the Fork button. In minutes, the entire site will be publicly hosted via your [github pages](http://github.com) at [https://USERNAME.github.com/onehash.com](https://USERNAME.github.com/onehash.com) (replace *USERNAME* with your github username)  
 
-\* I've forked the onehash.com repo into my personal account and it is now hosted at [https://pwmckenna.github.com/onehash.com](https://pwmckenna.github.com/onehash.com)\*  
-\* This works for most [https://github.com/bittorrenttorque](https://github.com/bittorrenttorque) repositories. Try [https://github.com/bittorrenttorque/paddleover.com](https://github.com/bittorrenttorque/paddleover.com)\*  
+<sup>\* I've forked the onehash.com repo into my personal account and it is now hosted at [https://pwmckenna.github.com/onehash.com](https://pwmckenna.github.com/onehash.com)\*</sup>  
+<sup>\* This works for most [https://github.com/bittorrenttorque](https://github.com/bittorrenttorque) repositories. Try [https://github.com/bittorrenttorque/paddleover.com](https://github.com/bittorrenttorque/paddleover.com)\*</sup>  
 <br>
 -----------------
 <br>
