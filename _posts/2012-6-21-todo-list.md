@@ -7,7 +7,8 @@ title: Personal Project Todo List
 
 * Write liquid extension to be used with jekyll that automatically converts keywords in text to links to github repos.
 
-* Write a version of backbrace that does what I want it to do. (live/die)
+* Write a version of backbrace that does what I want it to do. (live/die)  
+__UPDATE: Done! See [https://github.com/bittorrenttorque/backbrace](https://github.com/bittorrenttorque/backbrace)__
 
 * Come up with a standard way of updating submodules
 
