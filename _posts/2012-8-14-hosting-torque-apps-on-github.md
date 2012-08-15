@@ -16,7 +16,7 @@ __A__ll of our [Torque Demo Apps](https://torque.bittorrent.com) are built using
 
 __For instance:__ [http://onehash.com](http://onehash.com) points to [http://bittorrenttorque.github.com/onehash.com](http://bittorrenttorque.github.com/onehash.com), which is always up-to-date because we do developement in the *gh-pages* branch rather than *master*.
 
-So that's it! We've built these apps largely as examples, but we encourage you to take them wholesale if you feel you can give them an audience. Each of the apps are each covered under the MIT software license, so don't worry about any limitations or obligations. That being said, I do love an appreciative <a href="https://twitter.com/intent/user?screen_name=pwmckenna">tweet</a> :)
+So that's it! We've built these apps largely as examples, but we encourage you to take them wholesale if you feel you can give them an audience. Each of the apps are covered under the MIT software license, so don't worry about any limitations or obligations. That being said, I do love an appreciative <a href="https://twitter.com/intent/user?screen_name=pwmckenna">tweet</a> :)
 
 
  If you think this is swell/stupid/confusing, or you're a programmer hoping to get started with btapp.js, feel free to drop me a line. I'm happy to help.  
