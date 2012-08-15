@@ -32,4 +32,5 @@ Maybe we'll know sooner than later. Like every other [Torque app](http://torque.
 
 I'd love to know what you think, and if you're a programmer hoping to get started, feel free to drop me a line. I'm happy to help.
 
-<a href="https://twitter.com/intent/user?screen_name=pwmckenna">@pwmckenna</a>
+<a href="https://twitter.com/pwmckenna" class="twitter-follow-button" data-show-count="false">Follow @pwmckenna</a>
+<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
