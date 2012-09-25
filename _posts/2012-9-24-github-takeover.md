@@ -41,5 +41,5 @@ The A record has since been updated to redirect to coffeescript.org via dns, but
 
 __Lesson!__
 
-Set up your github repo first, with a CNAME file in your gh-pages repository. Make sure there's only a single entry, otherwise your page might build successfully without actually serving the additional domains. If you don't receive a notification saying that it built successfully, DO NOT SET UP YOUR DNS. It is possible to squat on domains via private (impossible for you to find) repos, so go ahead and assume if you can't build its because I have a repo with your name on it :)
+Set up your github repo first, with a CNAME file in your gh-pages repository. Make sure there's only a single entry, otherwise your page might build successfully without actually serving the additional domains. If you don't receive a notification saying that it built successfully, DO NOT SET UP YOUR DNS. It is even possible to squat on domains via private (impossible for you to find) repos, so go ahead and assume if you can't build its because I have a repo with your name on it :)
 
