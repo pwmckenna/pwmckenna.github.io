@@ -1,4 +1,9 @@
-#GitHub Page Takeover Post Mortem
+---
+layout: post
+title: GitHub Page Takeover Post Mortem
+---
+
+#{{ page.title }}
 
 <img src='../../../images/gh-pages.png' style="width:400;"></img>
 
