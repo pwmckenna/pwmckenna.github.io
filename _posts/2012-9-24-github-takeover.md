@@ -23,7 +23,7 @@ coffeescript.com
 
 There's currently no way for GitHub to verify that the creator of the <i>CNAME</i> file is the administrator of the domain, so its possible for anyone to create one. In fact, if you do this before the administrator creates their <i>CNAME</i> file, your page will continue to be served, rather than the owners! 
 
-__What to do?__
+__What should I do?__
 
 I created [a repo with a <i>gh-pages</i> branch](https://github.com/pwmckenna/coffeescript.com/tree/gh-pages), and commited the CNAME file above, as well as an <i>index.html</i> that simply redirected to <a href="http://coffeescript.org">coffeescript.org</a>. I waited a few minutes, still not quite believing it would work. But then a refresh directed me to coffeescript.org!
 
