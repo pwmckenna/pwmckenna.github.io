@@ -1,6 +1,6 @@
 ---
 layout: post
-title: GitHub Page Takeover Post Mortem
+title: GitHub Page (coffeescript.com) Takeover Post Mortem
 ---
 
 #{{ page.title }}
