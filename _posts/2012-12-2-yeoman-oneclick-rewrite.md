@@ -5,7 +5,7 @@ title: Rewriting OneClick Chrome extension using Yeoman
 
 #{{ page.title }}
 
-Its been >6 months since I build and released OneClick, and in that time Google has changed (http://developer.chrome.com/extensions/manifestVersion.html#manifest-v1-changes)[the requirements for installing extensions]. They've also had a team busy building (Yeoman)[http://yeoman.io] which looks like a great development/scaffolding tool. They have a generator for chrome apps, and I know there's a grunt plugin for building crx files, and I want to use all these things!
+Its been >6 months since I build and released OneClick, and in that time Google has changed [the requirements for installing extensions](http://developer.chrome.com/extensions/manifestVersion.html#manifest-v1-changes). They've also had a team busy building [Yeoman](http://yeoman.io) which looks like a great development/scaffolding tool. They have a generator for chrome apps, and I know there's a grunt plugin for building crx files, and I want to use all these things!
 
 So I'm going to blog while I do the rewrite using these tools. Here it goes.
 
