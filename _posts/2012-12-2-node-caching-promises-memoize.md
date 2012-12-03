@@ -13,7 +13,7 @@ Here's how:
 
 If you need to request an external resource (such as an image) to satisfy a request to your server, simply make the function that you make the request in return a promise object. Then memoize that function (using ```_.memoize``` for instance). You get the benefits of using memoize for caching, but you also treat everything as a promise, so if the second request occurs before the first resolves and is cached, you still are safe. In that case, both requests will simply be returned the same deferred object, and they'll be resolved at the same time. 
 
-An example of this can be seen in my project [https://github.com/pwmckenna/image_resize](image_resize), which takes a image href, and returns a scaled version. There are opportunities for caching both at the remote resource requests, but also after the resizing itself. Both functions return deferred objects and are memoized, so we don't need to think very hard to dramatically improve performance.
+An example of this can be seen in my project [image_resize](https://github.com/pwmckenna/image_resize), which takes a image href, and returns a scaled version. There are opportunities for caching both at the remote resource requests, but also after the resizing itself. Both functions return deferred objects and are memoized, so we don't need to think very hard to dramatically improve performance.
 
 For example, here's the function that requests the images.
 
