@@ -14,7 +14,7 @@ __(Sun 4:52 PM)__
 * found https://github.com/yeoman/generator-chromeapp#readme  
 * ran `yeoman init chromeapp`
 
-{% highlight %}
+```
 Please answer the following:
 [?] What would you like to call this application? (OneClick) 
 [?] How would you like to describe this application? (Download torrent content with the ease of a standard download.) 
@@ -54,7 +54,7 @@ Please answer the following:
 identical    app/index.html
 identical    app/manifest.json
 identical    app/_locales/en/messages.json
-{% endhighlight %}
+```
 
 <a href="https://twitter.com/pwmckenna" class="twitter-follow-button" data-show-count="false">Follow @pwmckenna</a>
 <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>Find
