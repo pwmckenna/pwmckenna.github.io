@@ -17,7 +17,7 @@ An example of this can be seen in my project [https://github.com/pwmckenna/image
 
 For example, here's the function that requests the images.
 
-```javascript
+@@@
 //memoizing here works as a cache...but its even better than that.
 //when you call for the second time with the same url, it doesn't
 //matter if the first request has resolved or not. Both requests will
@@ -47,7 +47,7 @@ request_image = _.memoize(function(url) {
     });
     return ret.promise;
 });
-```
+@@@
 
 This is just a simple usage of deferred objects, as they're only being used as callback aggregators. Got any uses that you want to share?
 
