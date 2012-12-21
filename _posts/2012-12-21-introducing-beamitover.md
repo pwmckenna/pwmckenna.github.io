@@ -15,7 +15,7 @@ For developers out there [getting started](http://btappjs.com/index.html) buildi
 
 And for the more casual users, my hope is that you will embrace the meshing of your social activity with your file downloads. In the age of smart phones generating incredible amounts of data, and >1GB GoPro videos flying around, we really need a good way to share this stuff with our friends and family.
 
-Anyhow, give it spin and let me know what you think! I'm available on [facebook](http://www.facebook.com/patriw), as well as twitter.
+Anyhow, give it spin and let me know what you think! Feel free to message me on [facebook](http://www.facebook.com/patriw), or twitter if you'd prefer. I love feedback!
 
 
 <a href="https://twitter.com/pwmckenna" class="twitter-follow-button" data-show-count="false">Follow @pwmckenna</a>
