@@ -9,6 +9,8 @@ Howdy all,
 
 Today I'm happy to bring you [BeamItOver](http://apps.facebook.com/beamitover), the latest project from [BitTorrent Torque Labs](http://torque.bittorrent.com/labs).
 
+<img src="../../../images/beamitoverfb.png" />
+
 It has the same functionality as some other [Torque Labs projects](http://paddleover.com), but its been designed from the ground up to bring the inherently social activity of sharing files to where the people are. Its a facebook app that aims to make sharing your files as simple as sharing anything else.
 
 For developers out there [getting started](http://btappjs.com/index.html) building Torque apps, I'm hoping this can be an exciting example of the possiblities using our technologies. Like everything out of Torque Labs, this project is open source, and [available on github](https://github.com/bittorrenttorque/beamitover).
