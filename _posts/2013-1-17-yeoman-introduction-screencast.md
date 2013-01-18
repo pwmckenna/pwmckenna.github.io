@@ -1,6 +1,6 @@
 ---
 layout: post
-title: GitHub Page (coffeescript.com) Takeover Post Mortem
+title: Yeoman Intro Screencast
 ---
 
 #{{ page.title }}
