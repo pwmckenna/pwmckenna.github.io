@@ -5,7 +5,7 @@ title: GitHub Page (coffeescript.com) Takeover Post Mortem
 
 #{{ page.title }}
 
-<img src='../../../images/gh-pages.png' style="width:400px;"></img>
+<img src='../../../images/gh-pages.png' style="width:400px;" />
 
 Look familiar? At around 11 pm on September 4th I saw this visiting [http://coffeescript.com](http://coffeescript.com) and knew I could take over the domain. Here's how, and what you can do to protect your domain.
 
