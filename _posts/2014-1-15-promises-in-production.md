@@ -77,7 +77,7 @@ That `.fail` hander doesn't re-throw the error, and doesn't return a promise, so
 
 Using `.done`, rather than `.then` means that if there's a rejected promise that is never handled via a promise failure handler, the promise chain will throw the exception. This means that you'll never silently swallow exceptions (good!), but it also means that there's an exception floating around, likely either crashing your process or leaving it in an unstable state (bad!).
 
-__If you are using `.done`, make sure you're intentionally ["failing fast"](http://servantofchaos.com/2008/11/the-fail-first.html)__. If you're using `.done` so you never silently swallow exceptions, try the approaches above instead!
+__If you are using `.done`, make sure you're intentionally "[failing fast](http://servantofchaos.com/2008/11/the-fail-first.html)"__. If you're using `.done` so you never silently swallow exceptions, try the approaches above instead!
 
 ## Thoughts?
 
