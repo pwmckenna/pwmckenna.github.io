@@ -38,7 +38,7 @@ var requestImage = _.memoize(function(url) {
         uri: url
     }, defer.makeNodeResolver());
     return defer.promise.spread(function (res, body) {
-        assert(result.staticCode === 200);
+        assert(result.statusCode === 200);
         return res;
     });
 });
