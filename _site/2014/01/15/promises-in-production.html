@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+   <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+   <title>Production Promise Exception Handling</title>
+   <meta name="author" content="Patrick Williams" />
+
+   <!-- syntax highlighting CSS -->
+   <link rel="stylesheet" href="/css/syntax.css" type="text/css" />
+   <link rel="stylesheet" href="/css/main.css" type="text/css" />
+
+   <!-- Homepage CSS -->
+   <link rel="stylesheet" href="/css/screen.css" type="text/css" media="screen, projection" />
+
+  <script type="text/javascript" src="//documentcloud.github.com/underscore/underscore-min.js"></script>
+  <script type="text/javascript" src="//platform.twitter.com/widgets.js"></script>
+</head>
+<body>
+
+<!-- ClickTale Top part -->
+<script type="text/javascript">
+var WRInitTime=(new Date()).getTime();
+</script>
+<!-- ClickTale end of Top part -->
+
+<div class="site">
+  <div class="title">
+    <div class="title_image">
+      <div>
+        <a href="/"><img src="/images/fire64.png" /></a>
+      </div>
+    </div>
+
+    <!--a class="extra" href="/resume/">resume</a-->
+
+    <span style="position:absolute;top:30px;right:0px;">
+      <a href="https://twitter.com/share" class="twitter-share-button" data-lang="en"></a>
+      <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="https://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+    </span>
+
+  </div>
+  
+  <div id="post">
+<h1 id="production-promise-exception-handling">Production Promise Exception Handling</h1>
+
+<p>I use <a href="https://npmjs.org/package/q">Q</a> everywhere. Here’s a few things that I wish I had known before using promises at work in a production environment (nodejs). </p>
+
+<h2 id="dont-call-anything-until-youre-in-a-promise-chain">Don’t call anything until you’re in a promise chain.</h2>
+<p>Start everything with <code>q.resolve()</code>.  </p>
+
+<p>This way exceptions thrown by the first function will be treated as rejected promises, rather than uncaught errors that will blow your server up. <strong>Instead of starting your promise chain by calling a function, start with a resolved promise</strong> so every function in your chain is treated like a promise callback (converting values into resolved promises, converting thrown exceptions into rejected ones), and most importantly, propegating <strong>every</strong> exception to your fail handlers.</p>
+
+<div class="highlight"><pre><code class="javascript"><span class="nx">q</span><span class="p">.</span><span class="nx">resolve</span><span class="p">().</span><span class="nx">then</span><span class="p">(</span><span class="nx">firstFunction</span><span class="p">).</span><span class="nx">then</span><span class="p">(</span><span class="nx">secondFunction</span><span class="p">);</span>
+<span class="c1">// you better be pretty confident firstFunction</span>
+<span class="c1">// cannot throw an exception to write the following</span>
+<span class="c1">//</span>
+<span class="c1">// if you&#39;re working on a team, you&#39;ll just have to hope no one</span>
+<span class="c1">// does something as well intentioned as adding parameter validation</span>
+<span class="c1">// to that function...</span>
+<span class="nx">firstFunction</span><span class="p">().</span><span class="nx">then</span><span class="p">(</span><span class="nx">secondFunction</span><span class="p">);</span></code></pre></div>
+
+<h4 id="pleasant-side-effect">Pleasant Side-Effect</h4>
+
+<p>Because promises convert returned values into promises resolved with that value, and convert thrown exceptions into promises rejected with that error, you gain some flexibility by ensuring that every function will be treated like a promise callback. For instance, the following poorly written function could never start your promise chain, but does just fine as a callback:</p>
+
+<div class="highlight"><pre><code class="javascript"><span class="kd">var</span> <span class="nx">divideByTwo</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">a</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="k">typeof</span> <span class="nx">a</span> <span class="o">!==</span> <span class="s1">&#39;Number&#39;</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">throw</span> <span class="k">new</span> <span class="nb">Error</span><span class="p">(</span><span class="s1">&#39;NaN&#39;</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">a</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="kc">NaN</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="nx">q</span><span class="p">.</span><span class="nx">resolve</span><span class="p">(</span><span class="nx">a</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+<span class="p">};</span></code></pre></div>
+
+<p>There is all kinds of return value nonsense in there. But if you started with <code>q.resolve</code>, no problem!</p>
+
+<h2 id="trailing-exception-handler">Trailing exception handler</h2>
+<p><code>.then(onSuccess).fail(onError)</code> not <code>.then(onSuccess, onError)</code>  </p>
+
+<p>Same issue as above, but on the tail end (and instead of blowing your server up, they’ll silently disappear).</p>
+
+<p>Exceptions thrown by <code>onSuccess</code> will not be handled by the <code>onError</code> handler of the same promise. If your <code>onSuccess</code> handler could possibly throw an exception, you need to have another <code>.fail</code> handler outside of it to deal with those.</p>
+
+<p><strong>Example</strong>: If you’re dealing with http requests, your success handler might check the result object for the status code, and assert that it is 200. You’ll need a trailing <code>.fail</code> handler for that. The fail handler for the request itself will only be called if the server is not reached.</p>
+
+<h2 id="accidentally-swallowing-exceptions">Accidentally swallowing exceptions</h2>
+
+<p>Its always tempting to introduce <code>.fail</code> handlers throughout your code to get a better idea of specifically where things are going wrong. I’m constantly writing functions that have fail handlers to get better visibility into where errors are coming from. <strong>But its important that your logging doesn’t inadvertantly result in a resolved promise like below.</strong></p>
+
+<div class="highlight"><pre><code class="javascript"><span class="kd">var</span> <span class="nx">doTasks</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">q</span><span class="p">.</span><span class="nx">resolve</span><span class="p">().</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nx">func1</span><span class="p">();</span>
+    <span class="p">}).</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nx">func2</span><span class="p">();</span>
+    <span class="p">}).</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nx">func3</span><span class="p">();</span>
+    <span class="p">}).</span><span class="nx">fail</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">console</span><span class="p">.</span><span class="nx">warn</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span>
+    <span class="p">});</span>
+<span class="p">};</span></code></pre></div>
+
+<p>That <code>.fail</code> hander doesn’t re-throw the error, and doesn’t return a promise, so the implicit <code>return;</code> is treated like a resolved promise. So <code>doTask</code> swallows all of its own errors. Make sure your teammates and your future self don’t mind being blindsided by errors if you add code like this.</p>
+
+<h2 id="intentionally-throwing-exceptions">Intentionally throwing exceptions</h2>
+
+<p><code>.done</code> vs <code>.then</code></p>
+
+<p>Using <code>.done</code>, rather than <code>.then</code> means that if there’s a rejected promise that is never handled via a promise failure handler, the promise chain will throw the exception. This means that you’ll never silently swallow exceptions (good!), but it also means that there’s an exception floating around, likely either crashing your process or leaving it in an unstable state (bad!).</p>
+
+<p><strong>If you are using <code>.done</code>, make sure you’re intentionally “<a href="http://servantofchaos.com/2008/11/the-fail-first.html">failing fast</a>“</strong>. If you’re using <code>.done</code> so you never silently swallow exceptions, try the approaches above instead!</p>
+
+<h2 id="thoughts">Thoughts?</h2>
+
+<p>Know of improvements, or a better way altogether? Have you run into your own issues with promises? Let me know!</p>
+
+<p><a href="https://twitter.com/pwmckenna" class="twitter-follow-button" data-show-count="false">Follow @pwmckenna</a>
+<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script></p>
+
+</div>
+
+<div id="related">
+  <h2>Related Posts</h2>
+  <ul class="posts">
+    
+      <li><span>10 Feb 2013</span> &raquo; <a href="/2013/02/10/todium.html">Todium, the Torrent Toolbelt</a></li>
+    
+      <li><span>25 Jan 2013</span> &raquo; <a href="/2013/01/25/yeoman-travis-gh-pages.html">Automatically `yeoman build` into gh-pages using travis-ci</a></li>
+    
+      <li><span>17 Jan 2013</span> &raquo; <a href="/2013/01/17/yeoman-introduction-screencast.html">Yeoman Intro Screencast</a></li>
+    
+  </ul>
+</div>
+<!-- 
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+/* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+var disqus_shortname = 'pwmckennablog'; // required: replace example with your forum shortname
+
+/* * * DON'T EDIT BELOW THIS LINE * * */
+(function() {
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+ -->
+  
+  <div class="footer">
+    <div class="contact">
+      <p>
+        Patrick Williams<br />
+        Engineering Lead at <a href="http://github.com/bittorrent"></a>BitTorrent<br />
+        patrick@bittorrent.com
+      </p>
+    </div>
+    <div class="contact">
+      <p>
+        <a href="http://github.com/pwmckenna/">github.com/pwmckenna</a><br />
+        <a href="https://twitter.com/intent/user?screen_name=pwmckenna">twitter.com/pwmckenna</a><br />
+        pwmckenna@gmail.com<br />
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ClickTale Bottom part -->
+<div id="ClickTaleDiv" style="display: none;"></div>
+<script type="text/javascript">
+if(document.location.protocol!='https:')
+  document.write(unescape("%3Cscript%20src='http://s.clicktale.net/WRb.js'%20type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+if(typeof ClickTale=='function') ClickTale(206,0.3,"www03");
+</script>
+<!-- ClickTale end of Bottom part -->
+
+<!-- Google Analytics -->
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+var pageTracker = _gat._getTracker("UA-31635554-1");
+pageTracker._trackPageview();
+</script>
+<!-- Google Analytics end -->
+
+</body>
+</html>

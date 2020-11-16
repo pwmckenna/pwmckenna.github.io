@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+   <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+   <title>Node Http Request Caching Using Promises + Memoize</title>
+   <meta name="author" content="Patrick Williams" />
+
+   <!-- syntax highlighting CSS -->
+   <link rel="stylesheet" href="/css/syntax.css" type="text/css" />
+   <link rel="stylesheet" href="/css/main.css" type="text/css" />
+
+   <!-- Homepage CSS -->
+   <link rel="stylesheet" href="/css/screen.css" type="text/css" media="screen, projection" />
+
+  <script type="text/javascript" src="//documentcloud.github.com/underscore/underscore-min.js"></script>
+  <script type="text/javascript" src="//platform.twitter.com/widgets.js"></script>
+</head>
+<body>
+
+<!-- ClickTale Top part -->
+<script type="text/javascript">
+var WRInitTime=(new Date()).getTime();
+</script>
+<!-- ClickTale end of Top part -->
+
+<div class="site">
+  <div class="title">
+    <div class="title_image">
+      <div>
+        <a href="/"><img src="/images/fire64.png" /></a>
+      </div>
+    </div>
+
+    <!--a class="extra" href="/resume/">resume</a-->
+
+    <span style="position:absolute;top:30px;right:0px;">
+      <a href="https://twitter.com/share" class="twitter-share-button" data-lang="en"></a>
+      <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="https://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+    </span>
+
+  </div>
+  
+  <div id="post">
+<h1 id="node-http-request-caching-using-promises--memoize">Node Http Request Caching Using Promises + Memoize</h1>
+
+<p>I’ve been playing around with promises recently, and while they’ve been amazing for helping organize asynchronous code in general, I’ve only just now discovered my favorite use.</p>
+
+<p><strong>Cache external resource requests, and easily handle duplicate in-flight requests.</strong></p>
+
+<p>Here’s how:</p>
+
+<p>If you need to request an external resource (such as an image) to satisfy a request to your server, simply make the function that you make the request in return a promise object. Then memoize that function (using <code>_.memoize</code> for instance). You get the benefits of using memoize for caching, but you also treat everything as a promise, so if the second request occurs before the first resolves and is cached, you still are safe. In that case, both requests will simply be returned the same deferred object, and they’ll be resolved at the same time.</p>
+
+<p>An example of this can be seen in my project <a href="https://github.com/pwmckenna/image_resize">image_resize</a>, which takes a image href, and returns a scaled version. There are opportunities for caching both at the remote resource requests, but also after the resizing itself. Both functions return deferred objects and are memoized, so we don’t need to think very hard to dramatically improve performance.</p>
+
+<p>For example, here’s the function that requests the images.</p>
+
+<div class="highlight"><pre><code class="javascript"><span class="c1">// memoizing here works as a cache...but its even better than that.</span>
+<span class="c1">// when you call for the second time with the same url, it doesn&#39;t</span>
+<span class="c1">// matter if the first request has resolved or not. Both requests will</span>
+<span class="c1">// get the same promise object, which will be resolved at the same time.</span>
+<span class="c1">// so no timing issues to worry about...</span>
+<span class="c1">// the caching is of the promise object, so dups of the results aren&#39;t</span>
+<span class="c1">// stored in memory, and the storage of the objects themselves is in some</span>
+<span class="c1">// tidy underscore closure</span>
+
+<span class="kd">var</span> <span class="nx">request</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;request&#39;</span><span class="p">);</span>
+<span class="kd">var</span> <span class="nx">q</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;q&#39;</span><span class="p">);</span>
+<span class="kd">var</span> <span class="nx">assert</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;assert&#39;</span><span class="p">);</span>
+
+<span class="kd">var</span> <span class="nx">requestImage</span> <span class="o">=</span> <span class="nx">_</span><span class="p">.</span><span class="nx">memoize</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">url</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">defer</span> <span class="o">=</span> <span class="nx">q</span><span class="p">.</span><span class="nx">defer</span><span class="p">();</span>
+    <span class="nx">request</span><span class="p">({</span>
+        <span class="nx">encoding</span><span class="o">:</span> <span class="s1">&#39;binary&#39;</span><span class="p">,</span> <span class="c1">// binary encoding means the body is a Buffer object</span>
+        <span class="nx">uri</span><span class="o">:</span> <span class="nx">url</span>
+    <span class="p">},</span> <span class="nx">defer</span><span class="p">.</span><span class="nx">makeNodeResolver</span><span class="p">());</span>
+    <span class="k">return</span> <span class="nx">defer</span><span class="p">.</span><span class="nx">promise</span><span class="p">.</span><span class="nx">spread</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">res</span><span class="p">,</span> <span class="nx">body</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">assert</span><span class="p">(</span><span class="nx">result</span><span class="p">.</span><span class="nx">statusCode</span> <span class="o">===</span> <span class="mi">200</span><span class="p">);</span>
+        <span class="k">return</span> <span class="nx">res</span><span class="p">;</span>
+    <span class="p">});</span>
+<span class="p">});</span></code></pre></div>
+
+<p>This is just a simple usage of deferred objects, as they’re only being used as callback aggregators. Got any uses that you want to share?</p>
+
+<p><a href="https://twitter.com/pwmckenna" class="twitter-follow-button" data-show-count="false">Follow @pwmckenna</a>
+<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script></p>
+
+</div>
+
+<div id="related">
+  <h2>Related Posts</h2>
+  <ul class="posts">
+    
+      <li><span>15 Jan 2014</span> &raquo; <a href="/2014/01/15/promises-in-production.html">Production Promise Exception Handling</a></li>
+    
+      <li><span>10 Feb 2013</span> &raquo; <a href="/2013/02/10/todium.html">Todium, the Torrent Toolbelt</a></li>
+    
+      <li><span>25 Jan 2013</span> &raquo; <a href="/2013/01/25/yeoman-travis-gh-pages.html">Automatically `yeoman build` into gh-pages using travis-ci</a></li>
+    
+  </ul>
+</div>
+<!-- 
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+/* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+var disqus_shortname = 'pwmckennablog'; // required: replace example with your forum shortname
+
+/* * * DON'T EDIT BELOW THIS LINE * * */
+(function() {
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+ -->
+  
+  <div class="footer">
+    <div class="contact">
+      <p>
+        Patrick Williams<br />
+        Engineering Lead at <a href="http://github.com/bittorrent"></a>BitTorrent<br />
+        patrick@bittorrent.com
+      </p>
+    </div>
+    <div class="contact">
+      <p>
+        <a href="http://github.com/pwmckenna/">github.com/pwmckenna</a><br />
+        <a href="https://twitter.com/intent/user?screen_name=pwmckenna">twitter.com/pwmckenna</a><br />
+        pwmckenna@gmail.com<br />
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ClickTale Bottom part -->
+<div id="ClickTaleDiv" style="display: none;"></div>
+<script type="text/javascript">
+if(document.location.protocol!='https:')
+  document.write(unescape("%3Cscript%20src='http://s.clicktale.net/WRb.js'%20type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+if(typeof ClickTale=='function') ClickTale(206,0.3,"www03");
+</script>
+<!-- ClickTale end of Bottom part -->
+
+<!-- Google Analytics -->
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+var pageTracker = _gat._getTracker("UA-31635554-1");
+pageTracker._trackPageview();
+</script>
+<!-- Google Analytics end -->
+
+</body>
+</html>

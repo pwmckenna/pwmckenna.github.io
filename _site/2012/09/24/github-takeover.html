@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+   <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+   <title>GitHub Page (coffeescript.com) Takeover Post Mortem</title>
+   <meta name="author" content="Patrick Williams" />
+
+   <!-- syntax highlighting CSS -->
+   <link rel="stylesheet" href="/css/syntax.css" type="text/css" />
+   <link rel="stylesheet" href="/css/main.css" type="text/css" />
+
+   <!-- Homepage CSS -->
+   <link rel="stylesheet" href="/css/screen.css" type="text/css" media="screen, projection" />
+
+  <script type="text/javascript" src="//documentcloud.github.com/underscore/underscore-min.js"></script>
+  <script type="text/javascript" src="//platform.twitter.com/widgets.js"></script>
+</head>
+<body>
+
+<!-- ClickTale Top part -->
+<script type="text/javascript">
+var WRInitTime=(new Date()).getTime();
+</script>
+<!-- ClickTale end of Top part -->
+
+<div class="site">
+  <div class="title">
+    <div class="title_image">
+      <div>
+        <a href="/"><img src="/images/fire64.png" /></a>
+      </div>
+    </div>
+
+    <!--a class="extra" href="/resume/">resume</a-->
+
+    <span style="position:absolute;top:30px;right:0px;">
+      <a href="https://twitter.com/share" class="twitter-share-button" data-lang="en"></a>
+      <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="https://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+    </span>
+
+  </div>
+  
+  <div id="post">
+<h1 id="github-page-coffeescriptcom-takeover-post-mortem">GitHub Page (coffeescript.com) Takeover Post Mortem</h1>
+
+<p><img src="../../../images/gh-pages.png" style="width:400px;" /></p>
+
+<p>Look familiar? At around 11 pm on September 4th I saw this visiting <a href="http://coffeescript.com">http://coffeescript.com</a> and knew I could take over the domain. Here’s how, and what you can do to protect your domain.</p>
+
+<p>There are a variety of cases where this appearing is perfectly fine. For instance, you’ll see it at <a href="http://pwmckenna.github.com/idontexist">http://pwmckenna.github.com/idontexist.html</a>, which makes sense because there I don’t have a repository called <i>idontexist</i> with a index.html file in the <a href="http://pages.github.com"><i>gh-pages</i></a> branch.</p>
+
+<p>Where this is a problem is when you see this on a custom (non-github) domain. It means that they’ve configured their dns to point to the github pages servers (in this case, <a href="https://help.github.com/articles/my-custom-domain-isn-t-working">an A record pointing to 204.232.175.78</a>). And unfortunately this means its up for grabs, first come, first serve.</p>
+
+<p>To serve the custom domain from your repository, you simply need to have a file called <i>CNAME</i> in the root directory, which contains the domain you wish to serve. ie: </p>
+
+<p><a href="https://raw.github.com/pwmckenna/coffeescript.com/master/CNAME"><i>CNAME</i></a><br />
+<code>
+coffeescript.com
+</code></p>
+
+<p>There’s currently no way for GitHub to verify that the creator of the <i>CNAME</i> file is the administrator of the domain, so its possible for anyone to create one. In fact, if you do this before the administrator creates their <i>CNAME</i> file, your page will continue to be served, rather than the owners! </p>
+
+<p><strong>What should I do?</strong></p>
+
+<p>I created <a href="https://github.com/pwmckenna/coffeescript.com/tree/gh-pages">a repo with a <i>gh-pages</i> branch</a>, and commited the CNAME file above, as well as an <i>index.html</i> that simply redirected to <a href="http://coffeescript.org">coffeescript.org</a>. I waited a few minutes, still not quite believing it would work. But then a refresh directed me to coffeescript.org!</p>
+
+<p><strong>Then I got scared.</strong></p>
+
+<p>I admire Jeremy Ashkenas as much as the next guy, and I was of course only trying to help. But then again, so was <a href="http://arstechnica.com/business/2012/03/hacker-commandeers-github-to-prove-vuln-in-ruby/">Egor Homakov</a>. I shot off emails to GitHub and Jermey, and headed to irc to sound the alarm, but no one was awake, so I headed to bed very worried about being discovered. </p>
+
+<p><strong>All is well that ends well</strong></p>
+
+<p>Turns out that Jeremy was appreciative, and Shawn Davenport over at GitHub was very responsive. Its a tough problem to solve, and it is still possible to fall into the same trap, but Shawn updated the <a href="https://help.github.com/articles/setting-up-a-custom-domain-with-pages">gh-pages custom domain page</a> to include the following warning:</p>
+
+<p><em>Good to know: create this file and wait for the notification from GitHub that your Page was built successfully before making DNS changes in the next step.</em></p>
+
+<p>The A record has since been updated to redirect to coffeescript.org via dns, but it was kind of exciting to have such a popular domain at my fingers. Be careful, or your domain might be next!</p>
+
+<p><strong>Lesson!</strong></p>
+
+<p>Set up your github repo first, with a CNAME file in your gh-pages repository. Make sure there’s only a single entry, otherwise your page might build successfully without actually serving the additional domains. If you don’t receive a notification saying that it built successfully, DO NOT SET UP YOUR DNS. It is even possible to squat on domains via private (impossible for you to find) repos, so go ahead and assume if you can’t build its because I have a repo with your name on it :)</p>
+
+
+</div>
+
+<div id="related">
+  <h2>Related Posts</h2>
+  <ul class="posts">
+    
+      <li><span>15 Jan 2014</span> &raquo; <a href="/2014/01/15/promises-in-production.html">Production Promise Exception Handling</a></li>
+    
+      <li><span>10 Feb 2013</span> &raquo; <a href="/2013/02/10/todium.html">Todium, the Torrent Toolbelt</a></li>
+    
+      <li><span>25 Jan 2013</span> &raquo; <a href="/2013/01/25/yeoman-travis-gh-pages.html">Automatically `yeoman build` into gh-pages using travis-ci</a></li>
+    
+  </ul>
+</div>
+<!-- 
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+/* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+var disqus_shortname = 'pwmckennablog'; // required: replace example with your forum shortname
+
+/* * * DON'T EDIT BELOW THIS LINE * * */
+(function() {
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+ -->
+  
+  <div class="footer">
+    <div class="contact">
+      <p>
+        Patrick Williams<br />
+        Engineering Lead at <a href="http://github.com/bittorrent"></a>BitTorrent<br />
+        patrick@bittorrent.com
+      </p>
+    </div>
+    <div class="contact">
+      <p>
+        <a href="http://github.com/pwmckenna/">github.com/pwmckenna</a><br />
+        <a href="https://twitter.com/intent/user?screen_name=pwmckenna">twitter.com/pwmckenna</a><br />
+        pwmckenna@gmail.com<br />
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ClickTale Bottom part -->
+<div id="ClickTaleDiv" style="display: none;"></div>
+<script type="text/javascript">
+if(document.location.protocol!='https:')
+  document.write(unescape("%3Cscript%20src='http://s.clicktale.net/WRb.js'%20type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+if(typeof ClickTale=='function') ClickTale(206,0.3,"www03");
+</script>
+<!-- ClickTale end of Bottom part -->
+
+<!-- Google Analytics -->
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+var pageTracker = _gat._getTracker("UA-31635554-1");
+pageTracker._trackPageview();
+</script>
+<!-- Google Analytics end -->
+
+</body>
+</html>

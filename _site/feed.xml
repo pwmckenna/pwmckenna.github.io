@@ -1,0 +1,652 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+	<channel>
+		<title>We just need each other</title>
+		<description>I make products for BitTorrent and myself. Then I talk about them.</description>
+		<link>http://pwmckenna.github.com</link>
+		<atom:link href="http://pwmckenna.github.com/feed.xml" rel="self" type="application/rss+xml" />
+		
+		
+			<item>
+				<title>Production Promise Exception Handling</title>
+				<description>&lt;h1 id=&quot;production-promise-exception-handling&quot;&gt;Production Promise Exception Handling&lt;/h1&gt;
+
+&lt;p&gt;I use &lt;a href=&quot;https://npmjs.org/package/q&quot;&gt;Q&lt;/a&gt; everywhere. Here’s a few things that I wish I had known before using promises at work in a production environment (nodejs). &lt;/p&gt;
+
+&lt;h2 id=&quot;dont-call-anything-until-youre-in-a-promise-chain&quot;&gt;Don’t call anything until you’re in a promise chain.&lt;/h2&gt;
+&lt;p&gt;Start everything with &lt;code&gt;q.resolve()&lt;/code&gt;.  &lt;/p&gt;
+
+&lt;p&gt;This way exceptions thrown by the first function will be treated as rejected promises, rather than uncaught errors that will blow your server up. &lt;strong&gt;Instead of starting your promise chain by calling a function, start with a resolved promise&lt;/strong&gt; so every function in your chain is treated like a promise callback (converting values into resolved promises, converting thrown exceptions into rejected ones), and most importantly, propegating &lt;strong&gt;every&lt;/strong&gt; exception to your fail handlers.&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;javascript&quot;&gt;&lt;span class=&quot;nx&quot;&gt;q&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;resolve&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;then&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;firstFunction&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;then&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;secondFunction&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;// you better be pretty confident firstFunction&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;// cannot throw an exception to write the following&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;//&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;// if you&amp;#39;re working on a team, you&amp;#39;ll just have to hope no one&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;// does something as well intentioned as adding parameter validation&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;// to that function...&lt;/span&gt;
+&lt;span class=&quot;nx&quot;&gt;firstFunction&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;then&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;secondFunction&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;h4 id=&quot;pleasant-side-effect&quot;&gt;Pleasant Side-Effect&lt;/h4&gt;
+
+&lt;p&gt;Because promises convert returned values into promises resolved with that value, and convert thrown exceptions into promises rejected with that error, you gain some flexibility by ensuring that every function will be treated like a promise callback. For instance, the following poorly written function could never start your promise chain, but does just fine as a callback:&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;javascript&quot;&gt;&lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;divideByTwo&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;a&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;typeof&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;a&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;!==&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&amp;#39;Number&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;throw&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;Error&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;NaN&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;!&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;a&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;NaN&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;q&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;resolve&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;a&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;/&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;};&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;There is all kinds of return value nonsense in there. But if you started with &lt;code&gt;q.resolve&lt;/code&gt;, no problem!&lt;/p&gt;
+
+&lt;h2 id=&quot;trailing-exception-handler&quot;&gt;Trailing exception handler&lt;/h2&gt;
+&lt;p&gt;&lt;code&gt;.then(onSuccess).fail(onError)&lt;/code&gt; not &lt;code&gt;.then(onSuccess, onError)&lt;/code&gt;  &lt;/p&gt;
+
+&lt;p&gt;Same issue as above, but on the tail end (and instead of blowing your server up, they’ll silently disappear).&lt;/p&gt;
+
+&lt;p&gt;Exceptions thrown by &lt;code&gt;onSuccess&lt;/code&gt; will not be handled by the &lt;code&gt;onError&lt;/code&gt; handler of the same promise. If your &lt;code&gt;onSuccess&lt;/code&gt; handler could possibly throw an exception, you need to have another &lt;code&gt;.fail&lt;/code&gt; handler outside of it to deal with those.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Example&lt;/strong&gt;: If you’re dealing with http requests, your success handler might check the result object for the status code, and assert that it is 200. You’ll need a trailing &lt;code&gt;.fail&lt;/code&gt; handler for that. The fail handler for the request itself will only be called if the server is not reached.&lt;/p&gt;
+
+&lt;h2 id=&quot;accidentally-swallowing-exceptions&quot;&gt;Accidentally swallowing exceptions&lt;/h2&gt;
+
+&lt;p&gt;Its always tempting to introduce &lt;code&gt;.fail&lt;/code&gt; handlers throughout your code to get a better idea of specifically where things are going wrong. I’m constantly writing functions that have fail handlers to get better visibility into where errors are coming from. &lt;strong&gt;But its important that your logging doesn’t inadvertantly result in a resolved promise like below.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;javascript&quot;&gt;&lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;doTasks&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;q&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;resolve&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;then&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;func1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}).&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;then&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;func2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}).&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;then&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;func3&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}).&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;fail&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;err&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;nx&quot;&gt;console&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;warn&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;err&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;};&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;That &lt;code&gt;.fail&lt;/code&gt; hander doesn’t re-throw the error, and doesn’t return a promise, so the implicit &lt;code&gt;return;&lt;/code&gt; is treated like a resolved promise. So &lt;code&gt;doTask&lt;/code&gt; swallows all of its own errors. Make sure your teammates and your future self don’t mind being blindsided by errors if you add code like this.&lt;/p&gt;
+
+&lt;h2 id=&quot;intentionally-throwing-exceptions&quot;&gt;Intentionally throwing exceptions&lt;/h2&gt;
+
+&lt;p&gt;&lt;code&gt;.done&lt;/code&gt; vs &lt;code&gt;.then&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;Using &lt;code&gt;.done&lt;/code&gt;, rather than &lt;code&gt;.then&lt;/code&gt; means that if there’s a rejected promise that is never handled via a promise failure handler, the promise chain will throw the exception. This means that you’ll never silently swallow exceptions (good!), but it also means that there’s an exception floating around, likely either crashing your process or leaving it in an unstable state (bad!).&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;If you are using &lt;code&gt;.done&lt;/code&gt;, make sure you’re intentionally “&lt;a href=&quot;http://servantofchaos.com/2008/11/the-fail-first.html&quot;&gt;failing fast&lt;/a&gt;“&lt;/strong&gt;. If you’re using &lt;code&gt;.done&lt;/code&gt; so you never silently swallow exceptions, try the approaches above instead!&lt;/p&gt;
+
+&lt;h2 id=&quot;thoughts&quot;&gt;Thoughts?&lt;/h2&gt;
+
+&lt;p&gt;Know of improvements, or a better way altogether? Have you run into your own issues with promises? Let me know!&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://twitter.com/pwmckenna&quot; class=&quot;twitter-follow-button&quot; data-show-count=&quot;false&quot;&gt;Follow @pwmckenna&lt;/a&gt;
+&lt;script&gt;!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=&quot;//platform.twitter.com/widgets.js&quot;;fjs.parentNode.insertBefore(js,fjs);}}(document,&quot;script&quot;,&quot;twitter-wjs&quot;);&lt;/script&gt;&lt;/p&gt;
+</description>
+				<pubDate>Wed, 15 Jan 2014 00:00:00 -0800</pubDate>
+				<link>http://pwmckenna.github.com/2014/01/15/promises-in-production.html</link>
+				<guid isPermaLink="true">http://pwmckenna.github.com/2014/01/15/promises-in-production.html</guid>
+			</item>
+		
+		
+		
+			<item>
+				<title>Todium, the Torrent Toolbelt</title>
+				<description>&lt;h1 id=&quot;todium-the-torrent-toolbelt&quot;&gt;Todium, the Torrent Toolbelt&lt;/h1&gt;
+
+&lt;p&gt;As I’ve grown into more of a front end development role here at BitTorrent, I’ve been spoiled by great analytics services for web apps, and json endpoints for almost anything. I’ve encountered a few cases where I felt that torrent files were unnecessarily difficult to work with, and Todium is an attempt to bring some of those nice web dev elements to working with torrents. &lt;/p&gt;
+
+&lt;p&gt;Todium is an open analytics service for torrents, allowing you to make different copies of the same torrent and compare download statistics. The service is build on top of a few generic bits of functionality, so those are being made available as distinct services as well, so that anyone can use them. &lt;/p&gt;
+
+&lt;h2 id=&quot;todiumcomhttptodiumcom&quot;&gt;&lt;a href=&quot;http://todium.com&quot;&gt;todium.com&lt;/a&gt;&lt;/h2&gt;
+
+&lt;p&gt;The same way you can use bit.ly to create custom urls you can see visitor stats for, todium takes a torrent/magnet link and gives you back one that you can distribute and see stats for.&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;http://www.clearbits.net/get/98-story-of-stuff.torrent&lt;/code&gt;  &lt;/p&gt;
+
+&lt;p&gt;converts to:  &lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;http://torrent.todium.com/-In6q0PhK6UYc_ypkVz7.torrent&lt;/code&gt;&lt;br /&gt;
+&lt;code&gt;Started: 3&lt;/code&gt;&lt;br /&gt;
+&lt;code&gt;Stopped: 1&lt;/code&gt;&lt;br /&gt;
+&lt;code&gt;Completed: 1 / 57.9 MB Downloaded&lt;/code&gt;  &lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Hint:&lt;/strong&gt; &lt;em&gt;You can use todium numerous times on the same torrent, and share them in different locations (twitter, facebook, clearbits, etc) to track different campaigns.&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Privacy:&lt;/strong&gt; &lt;em&gt;Under the hood, todium just uses a tracker to collect and serve torrent scrape information. This is no different than the data collected by &lt;strong&gt;opentracker&lt;/strong&gt; or &lt;strong&gt;publicbt&lt;/strong&gt;, or any other public tracker. If you’d like to view the source for the project, check below for links to all the related GitHub projects.&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Code:&lt;/strong&gt;&lt;br /&gt;
+&lt;a href=&quot;http://github.com/pwmckenna/todium&quot;&gt;https://github.com/pwmckenna/todium&lt;/a&gt;&lt;br /&gt;
+&lt;a href=&quot;http://github.com/pwmckenna/todium-api&quot;&gt;https://github.com/pwmckenna/todium-api&lt;/a&gt;&lt;br /&gt;
+&lt;a href=&quot;https://github.com/pwmckenna/todium-tracker&quot;&gt;https://github.com/pwmckenna/todium-tracker&lt;/a&gt;  &lt;/p&gt;
+
+&lt;h2 id=&quot;hashertodiumcom&quot;&gt;hasher.todium.com&lt;/h2&gt;
+
+&lt;p&gt;I kept finding myself needing to know the info hash for a torrent file hosted elsewhere. &lt;strong&gt;hasher.todium.com&lt;/strong&gt; takes a torrent url parameter and returns the info hash. JSON/JSONP + CORS, so hit this from anywhere and get a lovely json string back.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Example:&lt;/strong&gt; &lt;a href=&quot;http://hasher.todium.com/?torrent=http://featuredcontent.utorrent.com/torrents/BitTorrent%20-%20Tim%20Ferriss.torrent&quot; title=&quot;http://hasher.todium.com/?torrent=http://featuredcontent.utorrent.com/torrents/BitTorrent - Tim Ferriss.torrent&quot;&gt;Tim Ferriss torrent info hash&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Code:&lt;/strong&gt;&lt;br /&gt;
+&lt;a href=&quot;https://github.com/pwmckenna/torrent-file-hasher&quot;&gt;https://github.com/pwmckenna/torrent-file-hasher&lt;/a&gt;  &lt;/p&gt;
+
+&lt;h2 id=&quot;torrenttodiumcom&quot;&gt;torrent.todium.com&lt;/h2&gt;
+
+&lt;p&gt;Sometimes its helpful to be able to edit torrents on the fly. In the case of todium, I wanted to splice our custom todium tracker into torrent files hosted elsewhere. Its important that you don’t change the &lt;a href=&quot;http://wiki.theory.org/BitTorrentSpecification#Info_Dictionary&quot;&gt;info dict&lt;/a&gt;, otherwise you’ll change the info hash for the entire torrent. However, for properties outside of the info dict such as the list of trackers, you can freely edit without creating a seperate swarm. &lt;/p&gt;
+
+&lt;p&gt;I’d like this to be a generalized tool, rather than just a way to inject trackers into existing torrents. If you have any parts of a torrent you’d like to edit on the fly, post a comment and I’ll try to add support for it.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Example:&lt;/strong&gt; &lt;a href=&quot;http://torrent.todium.com/?tracker=http://asdf.com&amp;amp;torrent=http://featuredcontent.utorrent.com/torrents/BitTorrent%20-%20Tim%20Ferriss.torrent&quot; title=&quot;http://torrent.todium.com/?tracker=http://asdf.com&amp;amp;torrent=http://featuredcontent.utorrent.com/torrents/BitTorrent - Tim Ferriss.torrent&quot;&gt;Tim Ferriss torrent with an extra tracker&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Note:&lt;/strong&gt; You may have noticed that this service shares the same subdomain as the todium.com generated links. This is because Todium never actually stores the .torrent file. Instead, the “shortened” url pulls from the original torrent file source and parses the torrent file on the fly. This is heavily cached behind Amazon’s Cloudfront CDN, as it turns out the editing is quite slow and computationally pricy.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Code:&lt;/strong&gt;&lt;br /&gt;
+&lt;a href=&quot;https://github.com/pwmckenna/todium-torrent&quot;&gt;https://github.com/pwmckenna/todium-torrent&lt;/a&gt;  &lt;/p&gt;
+
+&lt;h2 id=&quot;additional-features&quot;&gt;Additional features?&lt;/h2&gt;
+
+&lt;p&gt;Have ideas for additional Todium functionality? Suggest via the comments or twitter and it might just happen!&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://twitter.com/pwmckenna&quot; class=&quot;twitter-follow-button&quot; data-show-count=&quot;false&quot;&gt;Follow @pwmckenna&lt;/a&gt;
+&lt;script&gt;!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=&quot;//platform.twitter.com/widgets.js&quot;;fjs.parentNode.insertBefore(js,fjs);}}(document,&quot;script&quot;,&quot;twitter-wjs&quot;);&lt;/script&gt;&lt;/p&gt;
+</description>
+				<pubDate>Sun, 10 Feb 2013 00:00:00 -0800</pubDate>
+				<link>http://pwmckenna.github.com/2013/02/10/todium.html</link>
+				<guid isPermaLink="true">http://pwmckenna.github.com/2013/02/10/todium.html</guid>
+			</item>
+		
+		
+		
+		
+		
+			<item>
+				<title>Yeoman Intro Screencast</title>
+				<description>&lt;h1 id=&quot;yeoman-intro-screencast&quot;&gt;Yeoman Intro Screencast&lt;/h1&gt;
+
+&lt;p&gt;I help organize the BitTorrent wednesday lunch tech talks, and to prime the pump I’ve been giving talks/workshops on my front end workflow. This is me introducting a fairly new web app scaffolding/debugging/testing tool called Yeoman.&lt;/p&gt;
+
+&lt;iframe src=&quot;http://player.vimeo.com/video/57642828&quot; width=&quot;500&quot; height=&quot;281&quot; frameborder=&quot;0&quot; webkitallowfullscreen=&quot;allowfullscreen&quot; mozallowfullscreen=&quot;allowfullscreen&quot; allowfullscreen=&quot;allowfullscreen&quot;&gt;&lt;/iframe&gt;
+&lt;p&gt;&lt;a href=&quot;http://vimeo.com/57642828&quot;&gt;Yeoman Introduction&lt;/a&gt; from &lt;a href=&quot;http://vimeo.com/pwmckenna&quot;&gt;Patrick Williams&lt;/a&gt; on &lt;a href=&quot;http://vimeo.com&quot;&gt;Vimeo&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;Slides from the talk are available &lt;a href=&quot;http://pwmckenna.github.com/talks/yeoman/&quot;&gt;here&lt;/a&gt;.&lt;/p&gt;
+</description>
+				<pubDate>Thu, 17 Jan 2013 00:00:00 -0800</pubDate>
+				<link>http://pwmckenna.github.com/2013/01/17/yeoman-introduction-screencast.html</link>
+				<guid isPermaLink="true">http://pwmckenna.github.com/2013/01/17/yeoman-introduction-screencast.html</guid>
+			</item>
+		
+		
+		
+			<item>
+				<title>Introducing BeamItOver</title>
+				<description>&lt;h1 id=&quot;introducing-beamitover&quot;&gt;Introducing BeamItOver&lt;/h1&gt;
+
+&lt;p&gt;Today I’m happy to bring you &lt;a href=&quot;http://apps.facebook.com/beamitover&quot;&gt;BeamItOver&lt;/a&gt;, the latest project from &lt;a href=&quot;http://torque.bittorrent.com/labs&quot;&gt;BitTorrent Torque Labs&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;http://apps.facebook.com/beamitover&quot;&gt;&lt;img width=&quot;100%&quot; src=&quot;../../../images/beamitover.png&quot; /&gt;&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;It has the same functionality as some other &lt;a href=&quot;http://paddleover.com&quot;&gt;Torque Labs projects&lt;/a&gt;, but it has been designed from the ground up to bring the inherently social activity of sharing files to where the people are. Its a facebook app that aims to make sharing your files as simple as sharing anything else.&lt;/p&gt;
+
+&lt;p&gt;For developers out there &lt;a href=&quot;http://btappjs.com/index.html&quot;&gt;getting started&lt;/a&gt; building Torque apps, I’m hoping this can be an exciting example of the possiblities using our technologies. Like everything out of Torque Labs, this project is open source, and &lt;a href=&quot;https://github.com/bittorrenttorque/beamitover&quot;&gt;available on github&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;And for the more casual users, my hope is that you will embrace the meshing of your social activity with your file downloads. In the age of smart phones generating incredible amounts of data, and &amp;gt;1GB GoPro videos flying around, we really need a good way to share this stuff with our friends and family.&lt;/p&gt;
+
+&lt;p&gt;Anyhow, give it spin and let me know what you think! Feel free to message me on &lt;a href=&quot;http://www.facebook.com/patriw&quot;&gt;facebook&lt;/a&gt;, or twitter if you’d prefer. I love feedback!&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://twitter.com/pwmckenna&quot; class=&quot;twitter-follow-button&quot; data-show-count=&quot;false&quot;&gt;Follow @pwmckenna&lt;/a&gt;
+&lt;script&gt;!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=&quot;//platform.twitter.com/widgets.js&quot;;fjs.parentNode.insertBefore(js,fjs);}}(document,&quot;script&quot;,&quot;twitter-wjs&quot;);&lt;/script&gt;&lt;/p&gt;
+</description>
+				<pubDate>Fri, 21 Dec 2012 00:00:00 -0800</pubDate>
+				<link>http://pwmckenna.github.com/2012/12/21/introducing-beamitover.html</link>
+				<guid isPermaLink="true">http://pwmckenna.github.com/2012/12/21/introducing-beamitover.html</guid>
+			</item>
+		
+		
+		
+			<item>
+				<title>Node Http Request Caching Using Promises + Memoize</title>
+				<description>&lt;h1 id=&quot;node-http-request-caching-using-promises--memoize&quot;&gt;Node Http Request Caching Using Promises + Memoize&lt;/h1&gt;
+
+&lt;p&gt;I’ve been playing around with promises recently, and while they’ve been amazing for helping organize asynchronous code in general, I’ve only just now discovered my favorite use.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Cache external resource requests, and easily handle duplicate in-flight requests.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Here’s how:&lt;/p&gt;
+
+&lt;p&gt;If you need to request an external resource (such as an image) to satisfy a request to your server, simply make the function that you make the request in return a promise object. Then memoize that function (using &lt;code&gt;_.memoize&lt;/code&gt; for instance). You get the benefits of using memoize for caching, but you also treat everything as a promise, so if the second request occurs before the first resolves and is cached, you still are safe. In that case, both requests will simply be returned the same deferred object, and they’ll be resolved at the same time.&lt;/p&gt;
+
+&lt;p&gt;An example of this can be seen in my project &lt;a href=&quot;https://github.com/pwmckenna/image_resize&quot;&gt;image_resize&lt;/a&gt;, which takes a image href, and returns a scaled version. There are opportunities for caching both at the remote resource requests, but also after the resizing itself. Both functions return deferred objects and are memoized, so we don’t need to think very hard to dramatically improve performance.&lt;/p&gt;
+
+&lt;p&gt;For example, here’s the function that requests the images.&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;javascript&quot;&gt;&lt;span class=&quot;c1&quot;&gt;// memoizing here works as a cache...but its even better than that.&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;// when you call for the second time with the same url, it doesn&amp;#39;t&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;// matter if the first request has resolved or not. Both requests will&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;// get the same promise object, which will be resolved at the same time.&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;// so no timing issues to worry about...&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;// the caching is of the promise object, so dups of the results aren&amp;#39;t&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;// stored in memory, and the storage of the objects themselves is in some&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;// tidy underscore closure&lt;/span&gt;
+
+&lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;request&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;require&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;request&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;q&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;require&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;q&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;assert&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;require&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;assert&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+&lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;requestImage&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;_&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;memoize&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;url&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;defer&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;q&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;defer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+    &lt;span class=&quot;nx&quot;&gt;request&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;({&lt;/span&gt;
+        &lt;span class=&quot;nx&quot;&gt;encoding&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&amp;#39;binary&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// binary encoding means the body is a Buffer object&lt;/span&gt;
+        &lt;span class=&quot;nx&quot;&gt;uri&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;url&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;},&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;defer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;makeNodeResolver&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;());&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;defer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;promise&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;spread&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;res&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;body&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;nx&quot;&gt;assert&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;result&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;statusCode&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;===&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;200&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;res&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;This is just a simple usage of deferred objects, as they’re only being used as callback aggregators. Got any uses that you want to share?&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://twitter.com/pwmckenna&quot; class=&quot;twitter-follow-button&quot; data-show-count=&quot;false&quot;&gt;Follow @pwmckenna&lt;/a&gt;
+&lt;script&gt;!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=&quot;//platform.twitter.com/widgets.js&quot;;fjs.parentNode.insertBefore(js,fjs);}}(document,&quot;script&quot;,&quot;twitter-wjs&quot;);&lt;/script&gt;&lt;/p&gt;
+</description>
+				<pubDate>Sun, 02 Dec 2012 00:00:00 -0800</pubDate>
+				<link>http://pwmckenna.github.com/2012/12/02/node-caching-promises-memoize.html</link>
+				<guid isPermaLink="true">http://pwmckenna.github.com/2012/12/02/node-caching-promises-memoize.html</guid>
+			</item>
+		
+		
+		
+			<item>
+				<title>GitHub Page (coffeescript.com) Takeover Post Mortem</title>
+				<description>&lt;h1 id=&quot;github-page-coffeescriptcom-takeover-post-mortem&quot;&gt;GitHub Page (coffeescript.com) Takeover Post Mortem&lt;/h1&gt;
+
+&lt;p&gt;&lt;img src=&quot;../../../images/gh-pages.png&quot; style=&quot;width:400px;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Look familiar? At around 11 pm on September 4th I saw this visiting &lt;a href=&quot;http://coffeescript.com&quot;&gt;http://coffeescript.com&lt;/a&gt; and knew I could take over the domain. Here’s how, and what you can do to protect your domain.&lt;/p&gt;
+
+&lt;p&gt;There are a variety of cases where this appearing is perfectly fine. For instance, you’ll see it at &lt;a href=&quot;http://pwmckenna.github.com/idontexist&quot;&gt;http://pwmckenna.github.com/idontexist.html&lt;/a&gt;, which makes sense because there I don’t have a repository called &lt;i&gt;idontexist&lt;/i&gt; with a index.html file in the &lt;a href=&quot;http://pages.github.com&quot;&gt;&lt;i&gt;gh-pages&lt;/i&gt;&lt;/a&gt; branch.&lt;/p&gt;
+
+&lt;p&gt;Where this is a problem is when you see this on a custom (non-github) domain. It means that they’ve configured their dns to point to the github pages servers (in this case, &lt;a href=&quot;https://help.github.com/articles/my-custom-domain-isn-t-working&quot;&gt;an A record pointing to 204.232.175.78&lt;/a&gt;). And unfortunately this means its up for grabs, first come, first serve.&lt;/p&gt;
+
+&lt;p&gt;To serve the custom domain from your repository, you simply need to have a file called &lt;i&gt;CNAME&lt;/i&gt; in the root directory, which contains the domain you wish to serve. ie: &lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://raw.github.com/pwmckenna/coffeescript.com/master/CNAME&quot;&gt;&lt;i&gt;CNAME&lt;/i&gt;&lt;/a&gt;&lt;br /&gt;
+&lt;code&gt;
+coffeescript.com
+&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;There’s currently no way for GitHub to verify that the creator of the &lt;i&gt;CNAME&lt;/i&gt; file is the administrator of the domain, so its possible for anyone to create one. In fact, if you do this before the administrator creates their &lt;i&gt;CNAME&lt;/i&gt; file, your page will continue to be served, rather than the owners! &lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;What should I do?&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;I created &lt;a href=&quot;https://github.com/pwmckenna/coffeescript.com/tree/gh-pages&quot;&gt;a repo with a &lt;i&gt;gh-pages&lt;/i&gt; branch&lt;/a&gt;, and commited the CNAME file above, as well as an &lt;i&gt;index.html&lt;/i&gt; that simply redirected to &lt;a href=&quot;http://coffeescript.org&quot;&gt;coffeescript.org&lt;/a&gt;. I waited a few minutes, still not quite believing it would work. But then a refresh directed me to coffeescript.org!&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Then I got scared.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;I admire Jeremy Ashkenas as much as the next guy, and I was of course only trying to help. But then again, so was &lt;a href=&quot;http://arstechnica.com/business/2012/03/hacker-commandeers-github-to-prove-vuln-in-ruby/&quot;&gt;Egor Homakov&lt;/a&gt;. I shot off emails to GitHub and Jermey, and headed to irc to sound the alarm, but no one was awake, so I headed to bed very worried about being discovered. &lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;All is well that ends well&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Turns out that Jeremy was appreciative, and Shawn Davenport over at GitHub was very responsive. Its a tough problem to solve, and it is still possible to fall into the same trap, but Shawn updated the &lt;a href=&quot;https://help.github.com/articles/setting-up-a-custom-domain-with-pages&quot;&gt;gh-pages custom domain page&lt;/a&gt; to include the following warning:&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;Good to know: create this file and wait for the notification from GitHub that your Page was built successfully before making DNS changes in the next step.&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;The A record has since been updated to redirect to coffeescript.org via dns, but it was kind of exciting to have such a popular domain at my fingers. Be careful, or your domain might be next!&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Lesson!&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Set up your github repo first, with a CNAME file in your gh-pages repository. Make sure there’s only a single entry, otherwise your page might build successfully without actually serving the additional domains. If you don’t receive a notification saying that it built successfully, DO NOT SET UP YOUR DNS. It is even possible to squat on domains via private (impossible for you to find) repos, so go ahead and assume if you can’t build its because I have a repo with your name on it :)&lt;/p&gt;
+
+</description>
+				<pubDate>Mon, 24 Sep 2012 00:00:00 -0700</pubDate>
+				<link>http://pwmckenna.github.com/2012/09/24/github-takeover.html</link>
+				<guid isPermaLink="true">http://pwmckenna.github.com/2012/09/24/github-takeover.html</guid>
+			</item>
+		
+		
+		
+			<item>
+				<title>Hosting Torque Apps on GitHub For Fun (and Profit?)</title>
+				<description>&lt;h1 id=&quot;hosting-torque-apps-on-github-for-fun-and-profit&quot;&gt;Hosting Torque Apps on GitHub For Fun (and Profit?)&lt;/h1&gt;
+
+&lt;p&gt;&lt;strong&gt;TL;DR:&lt;/strong&gt; Go to &lt;a href=&quot;https://github.com/bittorrenttorque/onehash.com&quot;&gt;https://github.com/bittorrenttorque/onehash.com&lt;/a&gt; and hit the Fork button. In minutes, the entire site will be publicly hosted via your &lt;a href=&quot;https://help.github.com/articles/what-are-github-pages&quot;&gt;github pages&lt;/a&gt; at &lt;a href=&quot;http://YOURGITHUBUSERNAME.github.com/onehash.com&quot;&gt;http://YOURGITHUBUSERNAME.github.com/onehash.com&lt;/a&gt;.&lt;br /&gt;
+&lt;strong&gt;WARNING:&lt;/strong&gt; Either delete the CNAME file or delete its contents. GitHub pages hosting will fail if it thinks two repos are serving the same domain.
+&amp;lt;p style=&quot;margin:0px;font-size:10px;font-variant:small-caps;&quot;&amp;gt;* I’ve forked the onehash.com repo into my personal account and it is now hosted at &lt;a href=&quot;http://pwmckenna.github.com/onehash.com&quot;&gt;http://pwmckenna.github.com/onehash.com&lt;/a&gt;&amp;lt;/p&amp;gt;
+&amp;lt;p style=&quot;margin:0px;font-size:10px;font-variant:small-caps;&quot;&amp;gt;* This works for most &lt;a href=&quot;https://github.com/bittorrenttorque&quot;&gt;https://github.com/bittorrenttorque&lt;/a&gt; repositories. Try &lt;a href=&quot;https://github.com/bittorrenttorque/paddleover.com&quot;&gt;https://github.com/bittorrenttorque/paddleover.com&lt;/a&gt;&amp;lt;/p&amp;gt;
+&lt;br /&gt;
+—————–
+&lt;br /&gt;
+__A__ll of our &lt;a href=&quot;https://torque.bittorrent.com&quot;&gt;Torque Demo Apps&lt;/a&gt; are built using &lt;a href=&quot;https://github.com/bittorrenttorque/btapp&quot;&gt;btapp.js&lt;/a&gt;, and while they communicate with a background torrent client via http interface, there is no traditional backend server to any of the apps. They’re just a collection of static Javascript/HTML/CSS. Because all of the files that we’re serving are static, we can take advantage of &lt;a href=&quot;http://pages.github.com/&quot;&gt;github’s gh-pages branch&lt;/a&gt;, to publicly serve our web apps directly from the repositories that we do develop in. &lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;For instance:&lt;/strong&gt; &lt;a href=&quot;http://onehash.com&quot;&gt;http://onehash.com&lt;/a&gt; points to &lt;a href=&quot;http://bittorrenttorque.github.com/onehash.com&quot;&gt;http://bittorrenttorque.github.com/onehash.com&lt;/a&gt;, which is always up-to-date because we do developement in the &lt;em&gt;gh-pages&lt;/em&gt; branch rather than &lt;em&gt;master&lt;/em&gt;.&lt;/p&gt;
+
+&lt;p&gt;So that’s it! We’ve built these apps largely as examples, but we encourage you to take them wholesale if you feel you can give them an audience. Each of the apps are covered under the MIT software license, so don’t worry about any limitations or obligations. That being said, I do love an appreciative &lt;a href=&quot;https://twitter.com/intent/user?screen_name=pwmckenna&quot;&gt;tweet&lt;/a&gt; :)&lt;/p&gt;
+
+&lt;p&gt;If you think this is swell/stupid/confusing, or you’re a programmer hoping to get started with btapp.js, feel free to drop me a line. I’m happy to help.  &lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://twitter.com/pwmckenna&quot; class=&quot;twitter-follow-button&quot; data-show-count=&quot;false&quot;&gt;Follow @pwmckenna&lt;/a&gt;
+&lt;script&gt;!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=&quot;//platform.twitter.com/widgets.js&quot;;fjs.parentNode.insertBefore(js,fjs);}}(document,&quot;script&quot;,&quot;twitter-wjs&quot;);&lt;/script&gt;&lt;/p&gt;
+</description>
+				<pubDate>Tue, 14 Aug 2012 00:00:00 -0700</pubDate>
+				<link>http://pwmckenna.github.com/2012/08/14/hosting-torque-apps-on-github.html</link>
+				<guid isPermaLink="true">http://pwmckenna.github.com/2012/08/14/hosting-torque-apps-on-github.html</guid>
+			</item>
+		
+		
+		
+			<item>
+				<title>Welcome to OneHash</title>
+				<description>&lt;h1 id=&quot;welcome-to-onehash&quot;&gt;Welcome to OneHash&lt;/h1&gt;
+
+&lt;p&gt;OneHash allows you to stream audio and video directly from a torrent swarm.&lt;/p&gt;
+
+&lt;p&gt;Take torrent information of any variety (torrent file, magnet link, info hash) and just put it after #, and the site will start to download the content, and let you watch or listen in your browser. &lt;/p&gt;
+
+&lt;p&gt;Take the DJ Shadow BitTorrent bundle for example (definitely worth a listen). This is the url to the torrent file:&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;http://featuredcontent.utorrent.com/torrents/DJShadow-BitTorrent-b.torrent&quot;&gt;http://featuredcontent.utorrent.com/torrents/DJShadow-BitTorrent-b.torrent&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;To listen using OneHash, just append the torrent information after #:&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;http://onehash.com#http://featuredcontent.utorrent.com/torrents/DJShadow-BitTorrent-b.torrent&quot;&gt;http://onehash.com#&lt;span style=&quot;font-weight:bold;&quot;&gt;http://featuredcontent.utorrent.com/torrents/DJShadow-BitTorrent-b.torrent&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img width=&quot;100%&quot; src=&quot;../../../images/onehash.png&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;You can of course enjoy the same torrent content using just the info hash:&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;http://onehash.com#DFD0A2D3D2AD601388900A344507BA368D56ACE2&quot;&gt;http://onehash.com#&lt;span style=&quot;font-weight:bold;&quot;&gt;DFD0A2D3D2AD601388900A344507BA368D56ACE2&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;There are still some kinks to be worked out, as we’re still fine tuning Torque’s streaming capabilities, and HTML5 video/audio support remains ever in flux, but its easy to see the potential here.&lt;/p&gt;
+
+&lt;p&gt;What happens when we get this stuff working as well as other streaming services? Will Louis C.K. become &lt;a href=&quot;https://buy.louisck.net/purchase/live-at-the-beacon-theater&quot;&gt;the rule&lt;/a&gt;, instead of the exception? If you can stream from torrent swarms, there won’t even be the hosting/bandwidth costs that C.K. had to deal with. &lt;/p&gt;
+
+&lt;p&gt;Maybe we’ll know sooner than later. Like every other &lt;a href=&quot;http://torque.bittorrent.com&quot;&gt;Torque app&lt;/a&gt; that we’ve written, we’ve made it &lt;a href=&quot;https://github.com/bittorrenttorque/onehash.com&quot;&gt;open source&lt;/a&gt; for other programmers to improve and use to their liking. And for the folks that are curious about the torrenting that’s happening under the hood, you can expand the torrent section to inspect the usual info, open the folder on disk or delete the torrent if you’re done with it. There’s an ongoing conversion about torrent persistance when using torque apps, so hopefully this will provide greater insight for our users.&lt;/p&gt;
+
+&lt;p&gt;I’d love to know what you think, and if you’re a programmer hoping to get started, feel free to drop me a line. I’m happy to help.&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://twitter.com/pwmckenna&quot; class=&quot;twitter-follow-button&quot; data-show-count=&quot;false&quot;&gt;Follow @pwmckenna&lt;/a&gt;
+&lt;script&gt;!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=&quot;//platform.twitter.com/widgets.js&quot;;fjs.parentNode.insertBefore(js,fjs);}}(document,&quot;script&quot;,&quot;twitter-wjs&quot;);&lt;/script&gt;&lt;/p&gt;
+</description>
+				<pubDate>Mon, 06 Aug 2012 00:00:00 -0700</pubDate>
+				<link>http://pwmckenna.github.com/2012/08/06/welcome-to-one-hash.html</link>
+				<guid isPermaLink="true">http://pwmckenna.github.com/2012/08/06/welcome-to-one-hash.html</guid>
+			</item>
+		
+		
+		
+			<item>
+				<title>The Making of OneHash</title>
+				<description>&lt;h1 id=&quot;the-making-of-onehash&quot;&gt;The Making of OneHash&lt;/h1&gt;
+
+&lt;p&gt;&lt;strong&gt;Warning:&lt;/strong&gt; Code! If you’d prefer to follow along using a gui, crack open the &lt;a href=&quot;http://github.com/bittorrenttorque/visualizer&quot;&gt;btapp.js visualizer&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;OneHash is a demo to show off how to stream torrent content to your browser, with the source of the content being a torrent swarm, as opposed to the traditional server source. &lt;/p&gt;
+
+&lt;p&gt;If you’re using &lt;a href=&quot;https://github.com/bittorrenttorque/btapp&quot;&gt;btapp.js&lt;/a&gt;, then you may have noticed that each file in a torrent has a property called &lt;em&gt;streaming_url&lt;/em&gt;. Assuming you’ve included &lt;a href=&quot;http://github.com/bittorrenttorque/backbrace&quot;&gt;backbrace&lt;/a&gt;, this is simple to access despite being deeply nested.&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;javascript&quot;&gt;&lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;btapp&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Btapp&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+&lt;span class=&quot;nx&quot;&gt;btapp&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;connect&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+
+&lt;span class=&quot;nx&quot;&gt;btapp&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;live&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;torrent * file * properties streaming_url&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;url&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;//url can be used anywhere you might use a web server url to stream media&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;Alternatively we can get the streaming url from the first file in the first torrent (assuming we have one added)&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;javascript&quot;&gt;&lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;url&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;btapp&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;get&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;torrent&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;at&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;get&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;file&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;at&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;get&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;properties&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;get&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;streaming_url&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;This url is served by the underlying Torque torrent client, which continues to download the torrent and pump the bits up to your player sequentially. And while a buffer is prioritized to allow for a better streaming experience, under the hood the torrent is still downloaded rarest-first, as much as performance allows.&lt;/p&gt;
+
+&lt;p&gt;Works with both video and audio, though there’s no media type checking, so you need to examine the file extensions to decide which dom element type to use.&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;javascript&quot;&gt;&lt;span class=&quot;nx&quot;&gt;btapp&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;live&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;torrent * file * properties streaming_url&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;url&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;properties&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;//get the full name of the file&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;ext&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;properties&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;get&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;name&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;//strip off the extension&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;ext&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;substr&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;lastIndexOf&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;.&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+    
+    &lt;span class=&quot;c1&quot;&gt;//lets only support mp4 for now&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;ext&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;===&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&amp;#39;mp4&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;video&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;$&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;&amp;lt;video&amp;gt;&amp;lt;/video&amp;gt;&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+        &lt;span class=&quot;nx&quot;&gt;video&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;attr&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;src&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;url&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+        &lt;span class=&quot;nx&quot;&gt;$&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;body&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;append&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;video&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;It should be noted that this streaming url can be used for normal browser downloads as well. This means that you could write a back-up service where everyone had bits and pieces of everything, but when someone clicked a link on your page to download their content, it would download into their browser like a normal download. The code to add those links to your page might look something like the following:&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;javascript&quot;&gt;&lt;span class=&quot;nx&quot;&gt;btapp&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;live&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;torrent * file * properties streaming_url&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;streaming_url&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;nx&quot;&gt;$&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;body&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;append&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;&amp;lt;a href=&amp;quot;&amp;#39;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;streaming_url&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&amp;#39;&amp;quot;&amp;gt;&amp;lt;/a&amp;gt;&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;Well, that’s about it. Normal http streaming/downloading from a url that’s actually doing torrent downloads for you. Pretty cool and hopefully helpful to someone.&lt;/p&gt;
+
+&lt;p&gt;I’d love to hear your thoughts, and if you’re a programmer hoping to get started, feel free to drop me a line. I’m happy to help.&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://twitter.com/pwmckenna&quot; class=&quot;twitter-follow-button&quot; data-show-count=&quot;false&quot;&gt;Follow @pwmckenna&lt;/a&gt;
+&lt;script&gt;!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=&quot;//platform.twitter.com/widgets.js&quot;;fjs.parentNode.insertBefore(js,fjs);}}(document,&quot;script&quot;,&quot;twitter-wjs&quot;);&lt;/script&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img width=&quot;100%&quot; src=&quot;../../../images/sqlbbq.png&quot; /&gt;&lt;/p&gt;
+</description>
+				<pubDate>Mon, 06 Aug 2012 00:00:00 -0700</pubDate>
+				<link>http://pwmckenna.github.com/2012/08/06/making-of-one-hash.html</link>
+				<guid isPermaLink="true">http://pwmckenna.github.com/2012/08/06/making-of-one-hash.html</guid>
+			</item>
+		
+		
+		
+			<item>
+				<title>The Making of OneClick</title>
+				<description>&lt;h1 id=&quot;the-making-of-oneclick&quot;&gt;The Making of OneClick&lt;/h1&gt;
+
+&lt;p&gt;OneClick is more an idea than a particular project, and has existed in a couple forms here at BitTorrent over the last six months or so. And the idea is this:&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Users already are accustomed to the download path of their browser. Instead of training them on a whole new way of downloading files, we should find a way to fit into their existing flow. In other words, torrent downloads should take the same number of clicks as a normal download. One.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;During a BitTorrent Palooza (2 day hackathons) several months ago, I talked Art Yerkes and Kyle into joining me with the goal of building out the first version of OneClick. It was going to leverage some pretty powerful &lt;a href=&quot;http://en.wikipedia.org/wiki/Layered_Service_Provider&quot;&gt;LSP&lt;/a&gt; code that Art had written previously to catch all socket connections on your machine, and silently divert all your torrent downloads to your invisible Torque client, which would then pump the torrent contents into the listening end of your socket. Art and Kyle flexed some pretty powerful networking fu for two days while I acted as glorified cheerleader, and in the end we had a functional demo that won us the competition. &lt;/p&gt;
+
+&lt;p&gt;The thrill of victory wasn’t able to mask a few glaring limitations however. With the palooza over, we needed to justify it as a product, and the combination of being Windows only and quite invasive was too much to overcome. So OneClick was shelved. &lt;/p&gt;
+
+&lt;p&gt;Time passed. Kyle and I continued to build out the &lt;a href=&quot;http://github.com/bittorrenttorque/btapp&quot;&gt;btapp.js&lt;/a&gt; library that sits on top of our Torque plugin/client, in preparation for the release of our public api. &lt;/p&gt;
+
+&lt;p&gt;For a bit of background on Torque, read &lt;a href=&quot;../../../2012/06/29/building-torque.html&quot;&gt;Building Torque&lt;/a&gt;…&lt;/p&gt;
+
+&lt;p&gt;Then late afternoon some Friday, I stumbled upon the Chrome Extension &lt;a href=&quot;http://code.google.com/chrome/extensions/webRequest.html&quot;&gt;webRequest&lt;/a&gt; api that gives you access to all the http headers for requests in Chrome. Which meant that not only could I filter for .torrent file requests, but I could go one step farther and just wait for a server to serve up a file with the &lt;em&gt;application/x-bittorrent&lt;/em&gt; mime type before springing into action.  I immediately slowed my ascent up Balmers peek, declined the co-worker invite to Zeitgeist (apparently it was quite the evening), and dove in. &lt;/p&gt;
+
+&lt;p&gt;Writing Chome extensions is actually fairly simple. Despite my failure to deliver on the foolishly bold claim I made to Art, saying that I’d have OneClick rewritten as a extension before he left for the day, it really wasn’t too much work. Their &lt;a href=&quot;http://code.google.com/chrome/extensions/getstarted.html&quot;&gt;getting started page&lt;/a&gt; is really precise, and their documentation and examples are really thorough, especially for &lt;a href=&quot;http://code.google.com/chrome/extensions/webRequest.html&quot;&gt;webRequests&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;Like every other app, I started with the following &lt;a href=&quot;http://github.com/bittorrenttorque/btapp&quot;&gt;btapp.js&lt;/a&gt; code:&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;javascript&quot;&gt;&lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;btapp&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Btapp&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;nx&quot;&gt;btapp&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;connect&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;Then when someone was served back the torrent mime type, I’d grab the url and load the torrent into the Torque client like so:&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;javascript&quot;&gt;&lt;span class=&quot;nx&quot;&gt;btapp&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;get&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;add&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;torrent&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;url&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;There are a couple ways that the downloads could have been handled due to torrents potentially representing many files. In the end, I just opened tabs pointing to the urls for the specific files being served by the Torque client, and forced a &lt;em&gt;Content-Dispostion&lt;/em&gt; header to ensure they were immediately converted to file downloads.&lt;/p&gt;
+
+&lt;p&gt;Creating a tab for each file in the torrent looked a little bit like the following:&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;javascript&quot;&gt;&lt;span class=&quot;nx&quot;&gt;torrent&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;get&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;file&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;each&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;file&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+	&lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;url&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;file&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;get&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;properties&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;get&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;streaming_url&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+	&lt;span class=&quot;nx&quot;&gt;chrome&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;tabs&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;create&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;({&lt;/span&gt;
+	&lt;span class=&quot;nx&quot;&gt;url&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;url&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+	&lt;span class=&quot;nx&quot;&gt;selected&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;false&lt;/span&gt;
+	&lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+</description>
+				<pubDate>Sat, 30 Jun 2012 00:00:00 -0700</pubDate>
+				<link>http://pwmckenna.github.com/2012/06/30/making-of-one-click.html</link>
+				<guid isPermaLink="true">http://pwmckenna.github.com/2012/06/30/making-of-one-click.html</guid>
+			</item>
+		
+		
+		
+			<item>
+				<title>The Making of PaddleOver</title>
+				<description>&lt;h1 id=&quot;the-making-of-paddleover&quot;&gt;The Making of PaddleOver&lt;/h1&gt;
+
+&lt;p&gt;For a bit of background, see &lt;a href=&quot;../../../2012/06/29/building-torque.html&quot;&gt;Building Torque&lt;/a&gt;…&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Torque&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;An important tidbit about the Torque api that led to building &lt;a href=&quot;http://paddleover.com&quot;&gt;PaddleOver&lt;/a&gt;, is the fact that you can use the &lt;a href=&quot;http://github.com/bittorrenttorque/btapp&quot;&gt;btapp.js&lt;/a&gt; Backbone library to connect to your local machine…or any other machine in the world. For instance, if you give me access, I can open a web page and play with files on your computer the exact same way that I could on my own computer. For the developer, it makes no difference.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Engineer + Beer + Btapp.js&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Originally I wanted to write a file distribution management tool that would allow software companies to distribute files to their servers &lt;a href=&quot;http://torrentfreak.com/facebook-uses-bittorrent-and-they-love-it-100625/&quot;&gt;the same way that Facebook does.&lt;/a&gt; I was also getting pretty obsessed with &lt;a href=&quot;&quot;&gt;Bret Victor’s&lt;/a&gt; work at the time, and thought that I’d take a swing at building an interface that had a singular goal of being easy to use. All it was suppose to do was allow any of the involved parties to move files from one computer to another.&lt;/p&gt;
+
+&lt;p&gt;After taking advantage of the keg here at BitTorrent for a bit one night, I started trolling around domain registrars and scored the awesome domain &lt;a href=&quot;&quot;&gt;http://beamitover.com&lt;/a&gt;. I was starting to envision a site simple enough to be used on a touch screen, with the asthetic of early Star Trek control panels. As this site was going to be showing off our api to other software devs, a sci-fi theme seem appropriate.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;But then we built it.&lt;/strong&gt; And it was so fun and easy to use. And I realized that it might be the first thing I’ve ever built that my mom might enjoy using. I couldn’t miss this opportunity.&lt;/p&gt;
+
+&lt;p&gt;The redesign started with a gorgeous background by &lt;a href=&quot;http://www.istockphoto.com/user_view.php?id=2715153&quot;&gt;James Gately&lt;/a&gt;. From there it was simply a matter of adding in a few easter eggs, sliding in some &lt;a href=&quot;https://twitter.com/intent/user?screen_name=thisisrobv&quot;&gt;Rob V.&lt;/a&gt; approved wood panelling and calling it a day. The site is quite simple both in terms of the UI and whats happening under the hood. My hope is that there’s a javascript dev out there that is inspired enough to take a peek at &lt;a href=&quot;http://github.com/bittorrenttorque/btapp&quot;&gt;btapp.js&lt;/a&gt; and build something themselves.&lt;/p&gt;
+
+&lt;p&gt;And I’ll tell you what. Build something awesome and I’ll just give you &lt;a href=&quot;&quot;&gt;http://beamitover.com&lt;/a&gt;. It deserves a good home.&lt;/p&gt;
+</description>
+				<pubDate>Fri, 29 Jun 2012 00:00:00 -0700</pubDate>
+				<link>http://pwmckenna.github.com/2012/06/29/making-of-paddle-over.html</link>
+				<guid isPermaLink="true">http://pwmckenna.github.com/2012/06/29/making-of-paddle-over.html</guid>
+			</item>
+		
+		
+		
+			<item>
+				<title>Building Torque</title>
+				<description>&lt;h1 id=&quot;building-torque&quot;&gt;Building Torque&lt;/h1&gt;
+
+&lt;p&gt;Six months ago, Kyle and I created a new team with the goal of building an api on top of our existing client that would make it simple for web developers to interact with our torrent clients. At the time, I was working on the team that develops uTorrent, and Kyle was a one man army in charge of our Remote feature. And while we wanted to utilize our existing client, the ultimate goal was for web devs to simply load in our Backbone library and write code that assumed that the client was installed, running, and ready for action. And while we’re far from done, we have a library that I enjoy building my own apps on top of.&lt;/p&gt;
+
+&lt;p&gt;In those six months, we built out the Torque executable, the plugin that lets you assume that everything is ready to go, and a Backbone.js library that gives you access in two lines of code. &lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;javascript&quot;&gt;&lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;btapp&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Btapp&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;nx&quot;&gt;btapp&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;connect&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;At the same time we were all being “Inspired” by &lt;a href=&quot;https://twitter.com/intent/user?screen_name=cagan&quot;&gt;Marty Cagan&lt;/a&gt;, and even though we’re not building a consumer product, we made user testing a priority. We’ve held a meetup (thank you &lt;a href=&quot;http://www.meetup.com/jsmeetup/&quot;&gt;SFJS&lt;/a&gt;!), supported the release of a product built on top of our api, and helped other BitTorrent devs with smaller projects for our 2 day coding paloozas. I would highly recommend all of those things for those building out an api, as it really is impossible to see all the sharp edges without fresh eyes. &lt;/p&gt;
+
+&lt;p&gt;I think what we have now is a pretty powerful tool for anyone that wants to move files around the web. All we needed was a way to show it off…&lt;/p&gt;
+
+&lt;p&gt;Well hello there &lt;a href=&quot;../../../2012/06/29/making-of-paddle-over.html&quot;&gt;PaddleOver&lt;/a&gt;…&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;TL;DR:&lt;/strong&gt; 
+We’re building web apps with &lt;a href=&quot;http://github.com/bittorrenttorque/btapp&quot;&gt;btapp.js&lt;/a&gt;&lt;br /&gt;
+Our other stuff is here: &lt;a href=&quot;&quot;&gt;http://github.com/bittorrenttorque&lt;/a&gt;&lt;/p&gt;
+</description>
+				<pubDate>Fri, 29 Jun 2012 00:00:00 -0700</pubDate>
+				<link>http://pwmckenna.github.com/2012/06/29/building-torque.html</link>
+				<guid isPermaLink="true">http://pwmckenna.github.com/2012/06/29/building-torque.html</guid>
+			</item>
+		
+		
+		
+			<item>
+				<title>Working with vertical backbone.js data structures</title>
+				<description>&lt;h1 id=&quot;working-with-vertical-backbonejs-data-structures&quot;&gt;Working with vertical backbone.js data structures&lt;/h1&gt;
+
+&lt;p&gt;Backbone.js seems to generally be used to represent database tables on the client side. Collections can contain Models, but anything deeper is a bit unwieldy. Imagine you have a Model, to which you set an attribute with a Collection as the value. That Collection contains Models, which each also have Collection attributes and so on and so forth. The goodness of the add/remove event binding starts to break down a bit.&lt;/p&gt;
+
+&lt;p&gt;Along comes &lt;a href=&quot;https://backbrace.github.com/pwmckenna/&quot;&gt;Backbrace.js&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;Backbone enables jQuery-esque &lt;em&gt;live&lt;/em&gt; calls to detect adds of Models or Collections regardless of how deep in the tree they are, regardless of whether any intermediate level exists yet.&lt;/p&gt;
+
+&lt;p&gt;For example:&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;javascript&quot;&gt;&lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;model&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Backbone&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;Model&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;callback&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;d&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;c&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;b&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;a&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+	&lt;span class=&quot;nx&quot;&gt;console&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;log&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;I only care about d in c in b in a...nothing in between&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;};&lt;/span&gt;
+&lt;span class=&quot;nx&quot;&gt;model&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;live&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;a b c d&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;callback&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+&lt;span class=&quot;nx&quot;&gt;model&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;set&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;a&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Backbone&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;Model&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;nx&quot;&gt;model&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;get&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;a&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;set&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;b&amp;#39;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Backbone&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;Model&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;nx&quot;&gt;model&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;get&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;a&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;get&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;b&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;set&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;c&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Backbone&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;Model&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;nx&quot;&gt;model&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;get&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;a&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;get&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;b&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;get&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;c&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;set&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;d&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Backbone&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;Model&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+&lt;span class=&quot;c1&quot;&gt;//Your callback was just called!&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;Originally the callback only provided the leaf node, but it turned out to be a bit of a pain point to not have the branches as well, so I implemented that between the code example and this sentence. Enjoy!&lt;/p&gt;
+</description>
+				<pubDate>Thu, 07 Jun 2012 00:00:00 -0700</pubDate>
+				<link>http://pwmckenna.github.com/2012/06/07/vertical-backbone-structures.html</link>
+				<guid isPermaLink="true">http://pwmckenna.github.com/2012/06/07/vertical-backbone-structures.html</guid>
+			</item>
+		
+		
+		
+			<item>
+				<title>Twitter Link</title>
+				<description>&lt;h1 id=&quot;twitter-link&quot;&gt;Twitter Link&lt;/h1&gt;
+
+&lt;p&gt;Hosting my blog on github means I don’t think twice about loading in js dependencies to do something awesome. I can just do it! &lt;/p&gt;
+
+&lt;p&gt;Why link to twitter when you can use their handsome &lt;a href=&quot;https://dev.twitter.com/docs/intents&quot;&gt;Web Intents?&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img height=&quot;300px&quot; src=&quot;../../../images/intent.png&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Just include this javascript file  &lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;javascript&quot;&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;script&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;type&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&amp;quot;text/javascript&amp;quot;&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;src&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&amp;quot;//platform.twitter.com/widgets.js&amp;quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;/script&amp;gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;Then place these where ever you’d like to link from  &lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;javascript&quot;&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;a&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;href&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&amp;quot;https://twitter.com/intent/user?screen_name=pwmckenna&amp;quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;@&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;pwmckenna&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;/a&amp;gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;results in &lt;a href=&quot;https://twitter.com/intent/user?screen_name=pwmckenna&quot;&gt;@pwmckenna&lt;/a&gt;&lt;/p&gt;
+</description>
+				<pubDate>Sun, 20 May 2012 00:00:00 -0700</pubDate>
+				<link>http://pwmckenna.github.com/2012/05/20/twitter-link.html</link>
+				<guid isPermaLink="true">http://pwmckenna.github.com/2012/05/20/twitter-link.html</guid>
+			</item>
+		
+		
+		
+			<item>
+				<title>Making My First Product On Purpose</title>
+				<description>&lt;h1 id=&quot;making-my-first-product-on-purpose&quot;&gt;Making My First Product On Purpose&lt;/h1&gt;
+
+&lt;p&gt;On March 29th of this year (my birthday…glad I didn’t skip work) I had the great pleasure of meeting Marty Cagan and listening to him share his insights on product development. And those two days turned product development from an art, to a science, in my mind.&lt;/p&gt;
+
+&lt;p&gt;In an effort to turn myself into a one man product creation wrecking ball, I’ve done a bunch of supplemental research to augment my Cagan experience.  &lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;http://www.facebook.com/advertising/&quot;&gt;http://www.facebook.com/advertising/&lt;/a&gt;&lt;br /&gt;
+Easy way to vet ideas with your target audience.  &lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;http://thoughtbot.com/&quot;&gt;http://thoughtbot.com/&lt;/a&gt;&lt;br /&gt;
+These guys seem to also think of this art as science.  &lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;http://www.trydesignlab.com/&quot;&gt;http://www.trydesignlab.com/&lt;/a&gt;&lt;br /&gt;
+Learn design by doing  &lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;http://bootstrapchallenge.com/&quot;&gt;http://bootstrapchallenge.com/&lt;/a&gt;&lt;br /&gt;
+I like this guy’s style  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;I’m in a pretty good place at work to give this a go. I’ll lead the charge and let you know how it goes. &lt;/p&gt;
+
+</description>
+				<pubDate>Fri, 11 May 2012 00:00:00 -0700</pubDate>
+				<link>http://pwmckenna.github.com/2012/05/11/making-my-first-product-on-purpose.html</link>
+				<guid isPermaLink="true">http://pwmckenna.github.com/2012/05/11/making-my-first-product-on-purpose.html</guid>
+			</item>
+		
+		
+		
+			<item>
+				<title>Goodbye Posterous</title>
+				<description>&lt;h1 id=&quot;goodbye-posterous&quot;&gt;Goodbye Posterous&lt;/h1&gt;
+
+&lt;p&gt;Dear Posterous,&lt;br /&gt;
+&lt;br /&gt;
+I loved you (I still defend you in office arguments!). But then I got busy with work and we lost touch. Now I’m in a role that requires a bit less coding and a bunch of plotting (more Pinky and the Brain, less gnuplot), and I need to blog again just to sort my thoughts out, so I though of you. But in the time that’s passed, you ran off with Twitter, and I’ve discovered gh-pages. I suppose there’s no turning back. It was good while it lasted.  &lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;http://pwmckenna.posterous.com&quot;&gt;http://pwmckenna.posterous.com&lt;/a&gt;&lt;/p&gt;
+</description>
+				<pubDate>Tue, 01 May 2012 00:00:00 -0700</pubDate>
+				<link>http://pwmckenna.github.com/2012/05/01/goodbye-posterous.html</link>
+				<guid isPermaLink="true">http://pwmckenna.github.com/2012/05/01/goodbye-posterous.html</guid>
+			</item>
+		
+		
+	</channel>
+</rss>

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+   <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+   <title>The Making of OneClick</title>
+   <meta name="author" content="Patrick Williams" />
+
+   <!-- syntax highlighting CSS -->
+   <link rel="stylesheet" href="/css/syntax.css" type="text/css" />
+   <link rel="stylesheet" href="/css/main.css" type="text/css" />
+
+   <!-- Homepage CSS -->
+   <link rel="stylesheet" href="/css/screen.css" type="text/css" media="screen, projection" />
+
+  <script type="text/javascript" src="//documentcloud.github.com/underscore/underscore-min.js"></script>
+  <script type="text/javascript" src="//platform.twitter.com/widgets.js"></script>
+</head>
+<body>
+
+<!-- ClickTale Top part -->
+<script type="text/javascript">
+var WRInitTime=(new Date()).getTime();
+</script>
+<!-- ClickTale end of Top part -->
+
+<div class="site">
+  <div class="title">
+    <div class="title_image">
+      <div>
+        <a href="/"><img src="/images/fire64.png" /></a>
+      </div>
+    </div>
+
+    <!--a class="extra" href="/resume/">resume</a-->
+
+    <span style="position:absolute;top:30px;right:0px;">
+      <a href="https://twitter.com/share" class="twitter-share-button" data-lang="en"></a>
+      <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="https://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+    </span>
+
+  </div>
+  
+  <div id="post">
+<h1 id="the-making-of-oneclick">The Making of OneClick</h1>
+
+<p>OneClick is more an idea than a particular project, and has existed in a couple forms here at BitTorrent over the last six months or so. And the idea is this:</p>
+
+<p><strong>Users already are accustomed to the download path of their browser. Instead of training them on a whole new way of downloading files, we should find a way to fit into their existing flow. In other words, torrent downloads should take the same number of clicks as a normal download. One.</strong></p>
+
+<p>During a BitTorrent Palooza (2 day hackathons) several months ago, I talked Art Yerkes and Kyle into joining me with the goal of building out the first version of OneClick. It was going to leverage some pretty powerful <a href="http://en.wikipedia.org/wiki/Layered_Service_Provider">LSP</a> code that Art had written previously to catch all socket connections on your machine, and silently divert all your torrent downloads to your invisible Torque client, which would then pump the torrent contents into the listening end of your socket. Art and Kyle flexed some pretty powerful networking fu for two days while I acted as glorified cheerleader, and in the end we had a functional demo that won us the competition. </p>
+
+<p>The thrill of victory wasn’t able to mask a few glaring limitations however. With the palooza over, we needed to justify it as a product, and the combination of being Windows only and quite invasive was too much to overcome. So OneClick was shelved. </p>
+
+<p>Time passed. Kyle and I continued to build out the <a href="http://github.com/bittorrenttorque/btapp">btapp.js</a> library that sits on top of our Torque plugin/client, in preparation for the release of our public api. </p>
+
+<p>For a bit of background on Torque, read <a href="../../../2012/06/29/building-torque.html">Building Torque</a>…</p>
+
+<p>Then late afternoon some Friday, I stumbled upon the Chrome Extension <a href="http://code.google.com/chrome/extensions/webRequest.html">webRequest</a> api that gives you access to all the http headers for requests in Chrome. Which meant that not only could I filter for .torrent file requests, but I could go one step farther and just wait for a server to serve up a file with the <em>application/x-bittorrent</em> mime type before springing into action.  I immediately slowed my ascent up Balmers peek, declined the co-worker invite to Zeitgeist (apparently it was quite the evening), and dove in. </p>
+
+<p>Writing Chome extensions is actually fairly simple. Despite my failure to deliver on the foolishly bold claim I made to Art, saying that I’d have OneClick rewritten as a extension before he left for the day, it really wasn’t too much work. Their <a href="http://code.google.com/chrome/extensions/getstarted.html">getting started page</a> is really precise, and their documentation and examples are really thorough, especially for <a href="http://code.google.com/chrome/extensions/webRequest.html">webRequests</a>.</p>
+
+<p>Like every other app, I started with the following <a href="http://github.com/bittorrenttorque/btapp">btapp.js</a> code:</p>
+
+<div class="highlight"><pre><code class="javascript"><span class="kd">var</span> <span class="nx">btapp</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Btapp</span><span class="p">;</span>
+<span class="nx">btapp</span><span class="p">.</span><span class="nx">connect</span><span class="p">();</span></code></pre></div>
+
+<p>Then when someone was served back the torrent mime type, I’d grab the url and load the torrent into the Torque client like so:</p>
+
+<div class="highlight"><pre><code class="javascript"><span class="nx">btapp</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;add&#39;</span><span class="p">).</span><span class="nx">torrent</span><span class="p">(</span><span class="nx">url</span><span class="p">);</span></code></pre></div>
+
+<p>There are a couple ways that the downloads could have been handled due to torrents potentially representing many files. In the end, I just opened tabs pointing to the urls for the specific files being served by the Torque client, and forced a <em>Content-Dispostion</em> header to ensure they were immediately converted to file downloads.</p>
+
+<p>Creating a tab for each file in the torrent looked a little bit like the following:</p>
+
+<div class="highlight"><pre><code class="javascript"><span class="nx">torrent</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;file&#39;</span><span class="p">).</span><span class="nx">each</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">file</span><span class="p">)</span> <span class="p">{</span>
+	<span class="kd">var</span> <span class="nx">url</span> <span class="o">=</span> <span class="nx">file</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;properties&#39;</span><span class="p">).</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;streaming_url&#39;</span><span class="p">);</span>
+	<span class="nx">chrome</span><span class="p">.</span><span class="nx">tabs</span><span class="p">.</span><span class="nx">create</span><span class="p">({</span>
+	<span class="nx">url</span><span class="o">:</span> <span class="nx">url</span><span class="p">,</span>
+	<span class="nx">selected</span><span class="o">:</span> <span class="kc">false</span>
+	<span class="p">});</span>
+<span class="p">});</span></code></pre></div>
+
+</div>
+
+<div id="related">
+  <h2>Related Posts</h2>
+  <ul class="posts">
+    
+      <li><span>15 Jan 2014</span> &raquo; <a href="/2014/01/15/promises-in-production.html">Production Promise Exception Handling</a></li>
+    
+      <li><span>10 Feb 2013</span> &raquo; <a href="/2013/02/10/todium.html">Todium, the Torrent Toolbelt</a></li>
+    
+      <li><span>25 Jan 2013</span> &raquo; <a href="/2013/01/25/yeoman-travis-gh-pages.html">Automatically `yeoman build` into gh-pages using travis-ci</a></li>
+    
+  </ul>
+</div>
+<!-- 
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+/* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+var disqus_shortname = 'pwmckennablog'; // required: replace example with your forum shortname
+
+/* * * DON'T EDIT BELOW THIS LINE * * */
+(function() {
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+ -->
+  
+  <div class="footer">
+    <div class="contact">
+      <p>
+        Patrick Williams<br />
+        Engineering Lead at <a href="http://github.com/bittorrent"></a>BitTorrent<br />
+        patrick@bittorrent.com
+      </p>
+    </div>
+    <div class="contact">
+      <p>
+        <a href="http://github.com/pwmckenna/">github.com/pwmckenna</a><br />
+        <a href="https://twitter.com/intent/user?screen_name=pwmckenna">twitter.com/pwmckenna</a><br />
+        pwmckenna@gmail.com<br />
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ClickTale Bottom part -->
+<div id="ClickTaleDiv" style="display: none;"></div>
+<script type="text/javascript">
+if(document.location.protocol!='https:')
+  document.write(unescape("%3Cscript%20src='http://s.clicktale.net/WRb.js'%20type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+if(typeof ClickTale=='function') ClickTale(206,0.3,"www03");
+</script>
+<!-- ClickTale end of Bottom part -->
+
+<!-- Google Analytics -->
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+var pageTracker = _gat._getTracker("UA-31635554-1");
+pageTracker._trackPageview();
+</script>
+<!-- Google Analytics end -->
+
+</body>
+</html>

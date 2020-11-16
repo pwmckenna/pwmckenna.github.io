@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+   <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+   <title>Building Torque</title>
+   <meta name="author" content="Patrick Williams" />
+
+   <!-- syntax highlighting CSS -->
+   <link rel="stylesheet" href="/css/syntax.css" type="text/css" />
+   <link rel="stylesheet" href="/css/main.css" type="text/css" />
+
+   <!-- Homepage CSS -->
+   <link rel="stylesheet" href="/css/screen.css" type="text/css" media="screen, projection" />
+
+  <script type="text/javascript" src="//documentcloud.github.com/underscore/underscore-min.js"></script>
+  <script type="text/javascript" src="//platform.twitter.com/widgets.js"></script>
+</head>
+<body>
+
+<!-- ClickTale Top part -->
+<script type="text/javascript">
+var WRInitTime=(new Date()).getTime();
+</script>
+<!-- ClickTale end of Top part -->
+
+<div class="site">
+  <div class="title">
+    <div class="title_image">
+      <div>
+        <a href="/"><img src="/images/fire64.png" /></a>
+      </div>
+    </div>
+
+    <!--a class="extra" href="/resume/">resume</a-->
+
+    <span style="position:absolute;top:30px;right:0px;">
+      <a href="https://twitter.com/share" class="twitter-share-button" data-lang="en"></a>
+      <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="https://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+    </span>
+
+  </div>
+  
+  <div id="post">
+<h1 id="building-torque">Building Torque</h1>
+
+<p>Six months ago, Kyle and I created a new team with the goal of building an api on top of our existing client that would make it simple for web developers to interact with our torrent clients. At the time, I was working on the team that develops uTorrent, and Kyle was a one man army in charge of our Remote feature. And while we wanted to utilize our existing client, the ultimate goal was for web devs to simply load in our Backbone library and write code that assumed that the client was installed, running, and ready for action. And while we’re far from done, we have a library that I enjoy building my own apps on top of.</p>
+
+<p>In those six months, we built out the Torque executable, the plugin that lets you assume that everything is ready to go, and a Backbone.js library that gives you access in two lines of code. </p>
+
+<div class="highlight"><pre><code class="javascript"><span class="kd">var</span> <span class="nx">btapp</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Btapp</span><span class="p">;</span>
+<span class="nx">btapp</span><span class="p">.</span><span class="nx">connect</span><span class="p">();</span></code></pre></div>
+
+<p>At the same time we were all being “Inspired” by <a href="https://twitter.com/intent/user?screen_name=cagan">Marty Cagan</a>, and even though we’re not building a consumer product, we made user testing a priority. We’ve held a meetup (thank you <a href="http://www.meetup.com/jsmeetup/">SFJS</a>!), supported the release of a product built on top of our api, and helped other BitTorrent devs with smaller projects for our 2 day coding paloozas. I would highly recommend all of those things for those building out an api, as it really is impossible to see all the sharp edges without fresh eyes. </p>
+
+<p>I think what we have now is a pretty powerful tool for anyone that wants to move files around the web. All we needed was a way to show it off…</p>
+
+<p>Well hello there <a href="../../../2012/06/29/making-of-paddle-over.html">PaddleOver</a>…</p>
+
+<p><strong>TL;DR:</strong> 
+We’re building web apps with <a href="http://github.com/bittorrenttorque/btapp">btapp.js</a><br />
+Our other stuff is here: <a href="">http://github.com/bittorrenttorque</a></p>
+
+</div>
+
+<div id="related">
+  <h2>Related Posts</h2>
+  <ul class="posts">
+    
+      <li><span>15 Jan 2014</span> &raquo; <a href="/2014/01/15/promises-in-production.html">Production Promise Exception Handling</a></li>
+    
+      <li><span>10 Feb 2013</span> &raquo; <a href="/2013/02/10/todium.html">Todium, the Torrent Toolbelt</a></li>
+    
+      <li><span>25 Jan 2013</span> &raquo; <a href="/2013/01/25/yeoman-travis-gh-pages.html">Automatically `yeoman build` into gh-pages using travis-ci</a></li>
+    
+  </ul>
+</div>
+<!-- 
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+/* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+var disqus_shortname = 'pwmckennablog'; // required: replace example with your forum shortname
+
+/* * * DON'T EDIT BELOW THIS LINE * * */
+(function() {
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+ -->
+  
+  <div class="footer">
+    <div class="contact">
+      <p>
+        Patrick Williams<br />
+        Engineering Lead at <a href="http://github.com/bittorrent"></a>BitTorrent<br />
+        patrick@bittorrent.com
+      </p>
+    </div>
+    <div class="contact">
+      <p>
+        <a href="http://github.com/pwmckenna/">github.com/pwmckenna</a><br />
+        <a href="https://twitter.com/intent/user?screen_name=pwmckenna">twitter.com/pwmckenna</a><br />
+        pwmckenna@gmail.com<br />
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ClickTale Bottom part -->
+<div id="ClickTaleDiv" style="display: none;"></div>
+<script type="text/javascript">
+if(document.location.protocol!='https:')
+  document.write(unescape("%3Cscript%20src='http://s.clicktale.net/WRb.js'%20type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+if(typeof ClickTale=='function') ClickTale(206,0.3,"www03");
+</script>
+<!-- ClickTale end of Bottom part -->
+
+<!-- Google Analytics -->
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+var pageTracker = _gat._getTracker("UA-31635554-1");
+pageTracker._trackPageview();
+</script>
+<!-- Google Analytics end -->
+
+</body>
+</html>

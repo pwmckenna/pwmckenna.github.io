@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+   <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+   <title>The Making of PaddleOver</title>
+   <meta name="author" content="Patrick Williams" />
+
+   <!-- syntax highlighting CSS -->
+   <link rel="stylesheet" href="/css/syntax.css" type="text/css" />
+   <link rel="stylesheet" href="/css/main.css" type="text/css" />
+
+   <!-- Homepage CSS -->
+   <link rel="stylesheet" href="/css/screen.css" type="text/css" media="screen, projection" />
+
+  <script type="text/javascript" src="//documentcloud.github.com/underscore/underscore-min.js"></script>
+  <script type="text/javascript" src="//platform.twitter.com/widgets.js"></script>
+</head>
+<body>
+
+<!-- ClickTale Top part -->
+<script type="text/javascript">
+var WRInitTime=(new Date()).getTime();
+</script>
+<!-- ClickTale end of Top part -->
+
+<div class="site">
+  <div class="title">
+    <div class="title_image">
+      <div>
+        <a href="/"><img src="/images/fire64.png" /></a>
+      </div>
+    </div>
+
+    <!--a class="extra" href="/resume/">resume</a-->
+
+    <span style="position:absolute;top:30px;right:0px;">
+      <a href="https://twitter.com/share" class="twitter-share-button" data-lang="en"></a>
+      <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="https://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+    </span>
+
+  </div>
+  
+  <div id="post">
+<h1 id="the-making-of-paddleover">The Making of PaddleOver</h1>
+
+<p>For a bit of background, see <a href="../../../2012/06/29/building-torque.html">Building Torque</a>…</p>
+
+<p><strong>Torque</strong></p>
+
+<p>An important tidbit about the Torque api that led to building <a href="http://paddleover.com">PaddleOver</a>, is the fact that you can use the <a href="http://github.com/bittorrenttorque/btapp">btapp.js</a> Backbone library to connect to your local machine…or any other machine in the world. For instance, if you give me access, I can open a web page and play with files on your computer the exact same way that I could on my own computer. For the developer, it makes no difference.</p>
+
+<p><strong>Engineer + Beer + Btapp.js</strong></p>
+
+<p>Originally I wanted to write a file distribution management tool that would allow software companies to distribute files to their servers <a href="http://torrentfreak.com/facebook-uses-bittorrent-and-they-love-it-100625/">the same way that Facebook does.</a> I was also getting pretty obsessed with <a href="">Bret Victor’s</a> work at the time, and thought that I’d take a swing at building an interface that had a singular goal of being easy to use. All it was suppose to do was allow any of the involved parties to move files from one computer to another.</p>
+
+<p>After taking advantage of the keg here at BitTorrent for a bit one night, I started trolling around domain registrars and scored the awesome domain <a href="">http://beamitover.com</a>. I was starting to envision a site simple enough to be used on a touch screen, with the asthetic of early Star Trek control panels. As this site was going to be showing off our api to other software devs, a sci-fi theme seem appropriate.</p>
+
+<p><strong>But then we built it.</strong> And it was so fun and easy to use. And I realized that it might be the first thing I’ve ever built that my mom might enjoy using. I couldn’t miss this opportunity.</p>
+
+<p>The redesign started with a gorgeous background by <a href="http://www.istockphoto.com/user_view.php?id=2715153">James Gately</a>. From there it was simply a matter of adding in a few easter eggs, sliding in some <a href="https://twitter.com/intent/user?screen_name=thisisrobv">Rob V.</a> approved wood panelling and calling it a day. The site is quite simple both in terms of the UI and whats happening under the hood. My hope is that there’s a javascript dev out there that is inspired enough to take a peek at <a href="http://github.com/bittorrenttorque/btapp">btapp.js</a> and build something themselves.</p>
+
+<p>And I’ll tell you what. Build something awesome and I’ll just give you <a href="">http://beamitover.com</a>. It deserves a good home.</p>
+
+</div>
+
+<div id="related">
+  <h2>Related Posts</h2>
+  <ul class="posts">
+    
+      <li><span>15 Jan 2014</span> &raquo; <a href="/2014/01/15/promises-in-production.html">Production Promise Exception Handling</a></li>
+    
+      <li><span>10 Feb 2013</span> &raquo; <a href="/2013/02/10/todium.html">Todium, the Torrent Toolbelt</a></li>
+    
+      <li><span>25 Jan 2013</span> &raquo; <a href="/2013/01/25/yeoman-travis-gh-pages.html">Automatically `yeoman build` into gh-pages using travis-ci</a></li>
+    
+  </ul>
+</div>
+<!-- 
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+/* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+var disqus_shortname = 'pwmckennablog'; // required: replace example with your forum shortname
+
+/* * * DON'T EDIT BELOW THIS LINE * * */
+(function() {
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+ -->
+  
+  <div class="footer">
+    <div class="contact">
+      <p>
+        Patrick Williams<br />
+        Engineering Lead at <a href="http://github.com/bittorrent"></a>BitTorrent<br />
+        patrick@bittorrent.com
+      </p>
+    </div>
+    <div class="contact">
+      <p>
+        <a href="http://github.com/pwmckenna/">github.com/pwmckenna</a><br />
+        <a href="https://twitter.com/intent/user?screen_name=pwmckenna">twitter.com/pwmckenna</a><br />
+        pwmckenna@gmail.com<br />
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ClickTale Bottom part -->
+<div id="ClickTaleDiv" style="display: none;"></div>
+<script type="text/javascript">
+if(document.location.protocol!='https:')
+  document.write(unescape("%3Cscript%20src='http://s.clicktale.net/WRb.js'%20type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+if(typeof ClickTale=='function') ClickTale(206,0.3,"www03");
+</script>
+<!-- ClickTale end of Bottom part -->
+
+<!-- Google Analytics -->
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+var pageTracker = _gat._getTracker("UA-31635554-1");
+pageTracker._trackPageview();
+</script>
+<!-- Google Analytics end -->
+
+</body>
+</html>

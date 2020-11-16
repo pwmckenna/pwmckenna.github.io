@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+   <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+   <title>The Making of OneHash</title>
+   <meta name="author" content="Patrick Williams" />
+
+   <!-- syntax highlighting CSS -->
+   <link rel="stylesheet" href="/css/syntax.css" type="text/css" />
+   <link rel="stylesheet" href="/css/main.css" type="text/css" />
+
+   <!-- Homepage CSS -->
+   <link rel="stylesheet" href="/css/screen.css" type="text/css" media="screen, projection" />
+
+  <script type="text/javascript" src="//documentcloud.github.com/underscore/underscore-min.js"></script>
+  <script type="text/javascript" src="//platform.twitter.com/widgets.js"></script>
+</head>
+<body>
+
+<!-- ClickTale Top part -->
+<script type="text/javascript">
+var WRInitTime=(new Date()).getTime();
+</script>
+<!-- ClickTale end of Top part -->
+
+<div class="site">
+  <div class="title">
+    <div class="title_image">
+      <div>
+        <a href="/"><img src="/images/fire64.png" /></a>
+      </div>
+    </div>
+
+    <!--a class="extra" href="/resume/">resume</a-->
+
+    <span style="position:absolute;top:30px;right:0px;">
+      <a href="https://twitter.com/share" class="twitter-share-button" data-lang="en"></a>
+      <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="https://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+    </span>
+
+  </div>
+  
+  <div id="post">
+<h1 id="the-making-of-onehash">The Making of OneHash</h1>
+
+<p><strong>Warning:</strong> Code! If you’d prefer to follow along using a gui, crack open the <a href="http://github.com/bittorrenttorque/visualizer">btapp.js visualizer</a>.</p>
+
+<p>OneHash is a demo to show off how to stream torrent content to your browser, with the source of the content being a torrent swarm, as opposed to the traditional server source. </p>
+
+<p>If you’re using <a href="https://github.com/bittorrenttorque/btapp">btapp.js</a>, then you may have noticed that each file in a torrent has a property called <em>streaming_url</em>. Assuming you’ve included <a href="http://github.com/bittorrenttorque/backbrace">backbrace</a>, this is simple to access despite being deeply nested.</p>
+
+<div class="highlight"><pre><code class="javascript"><span class="kd">var</span> <span class="nx">btapp</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Btapp</span><span class="p">();</span>
+<span class="nx">btapp</span><span class="p">.</span><span class="nx">connect</span><span class="p">();</span>
+
+<span class="nx">btapp</span><span class="p">.</span><span class="nx">live</span><span class="p">(</span><span class="s1">&#39;torrent * file * properties streaming_url&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">url</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">//url can be used anywhere you might use a web server url to stream media</span>
+<span class="p">});</span></code></pre></div>
+
+<p>Alternatively we can get the streaming url from the first file in the first torrent (assuming we have one added)</p>
+
+<div class="highlight"><pre><code class="javascript"><span class="kd">var</span> <span class="nx">url</span> <span class="o">=</span> <span class="nx">btapp</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;torrent&#39;</span><span class="p">).</span><span class="nx">at</span><span class="p">(</span><span class="mi">0</span><span class="p">).</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;file&#39;</span><span class="p">).</span><span class="nx">at</span><span class="p">(</span><span class="mi">0</span><span class="p">).</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;properties&#39;</span><span class="p">).</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;streaming_url&#39;</span><span class="p">);</span></code></pre></div>
+
+<p>This url is served by the underlying Torque torrent client, which continues to download the torrent and pump the bits up to your player sequentially. And while a buffer is prioritized to allow for a better streaming experience, under the hood the torrent is still downloaded rarest-first, as much as performance allows.</p>
+
+<p>Works with both video and audio, though there’s no media type checking, so you need to examine the file extensions to decide which dom element type to use.</p>
+
+<div class="highlight"><pre><code class="javascript"><span class="nx">btapp</span><span class="p">.</span><span class="nx">live</span><span class="p">(</span><span class="s1">&#39;torrent * file * properties streaming_url&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">url</span><span class="p">,</span> <span class="nx">properties</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">//get the full name of the file</span>
+    <span class="kd">var</span> <span class="nx">ext</span> <span class="o">=</span> <span class="nx">properties</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">);</span>
+    <span class="c1">//strip off the extension</span>
+    <span class="kd">var</span> <span class="nx">ext</span> <span class="o">=</span> <span class="nx">name</span><span class="p">.</span><span class="nx">substr</span><span class="p">(</span><span class="nx">name</span><span class="p">.</span><span class="nx">lastIndexOf</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">);</span>
+    
+    <span class="c1">//lets only support mp4 for now</span>
+    <span class="k">if</span><span class="p">(</span><span class="nx">ext</span> <span class="o">===</span> <span class="s1">&#39;mp4&#39;</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kd">var</span> <span class="nx">video</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="s1">&#39;&lt;video&gt;&lt;/video&gt;&#39;</span><span class="p">);</span>
+        <span class="nx">video</span><span class="p">.</span><span class="nx">attr</span><span class="p">(</span><span class="s1">&#39;src&#39;</span><span class="p">,</span> <span class="nx">url</span><span class="p">);</span>
+        <span class="nx">$</span><span class="p">(</span><span class="s1">&#39;body&#39;</span><span class="p">).</span><span class="nx">append</span><span class="p">(</span><span class="nx">video</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">});</span></code></pre></div>
+
+<p>It should be noted that this streaming url can be used for normal browser downloads as well. This means that you could write a back-up service where everyone had bits and pieces of everything, but when someone clicked a link on your page to download their content, it would download into their browser like a normal download. The code to add those links to your page might look something like the following:</p>
+
+<div class="highlight"><pre><code class="javascript"><span class="nx">btapp</span><span class="p">.</span><span class="nx">live</span><span class="p">(</span><span class="s1">&#39;torrent * file * properties streaming_url&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">streaming_url</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">$</span><span class="p">(</span><span class="s1">&#39;body&#39;</span><span class="p">).</span><span class="nx">append</span><span class="p">(</span><span class="s1">&#39;&lt;a href=&quot;&#39;</span> <span class="o">+</span> <span class="nx">streaming_url</span> <span class="o">+</span> <span class="s1">&#39;&quot;&gt;&lt;/a&gt;&#39;</span><span class="p">)</span>
+<span class="p">});</span></code></pre></div>
+
+<p>Well, that’s about it. Normal http streaming/downloading from a url that’s actually doing torrent downloads for you. Pretty cool and hopefully helpful to someone.</p>
+
+<p>I’d love to hear your thoughts, and if you’re a programmer hoping to get started, feel free to drop me a line. I’m happy to help.</p>
+
+<p><a href="https://twitter.com/pwmckenna" class="twitter-follow-button" data-show-count="false">Follow @pwmckenna</a>
+<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script></p>
+
+<p><img width="100%" src="../../../images/sqlbbq.png" /></p>
+
+</div>
+
+<div id="related">
+  <h2>Related Posts</h2>
+  <ul class="posts">
+    
+      <li><span>15 Jan 2014</span> &raquo; <a href="/2014/01/15/promises-in-production.html">Production Promise Exception Handling</a></li>
+    
+      <li><span>10 Feb 2013</span> &raquo; <a href="/2013/02/10/todium.html">Todium, the Torrent Toolbelt</a></li>
+    
+      <li><span>25 Jan 2013</span> &raquo; <a href="/2013/01/25/yeoman-travis-gh-pages.html">Automatically `yeoman build` into gh-pages using travis-ci</a></li>
+    
+  </ul>
+</div>
+<!-- 
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+/* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+var disqus_shortname = 'pwmckennablog'; // required: replace example with your forum shortname
+
+/* * * DON'T EDIT BELOW THIS LINE * * */
+(function() {
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+ -->
+  
+  <div class="footer">
+    <div class="contact">
+      <p>
+        Patrick Williams<br />
+        Engineering Lead at <a href="http://github.com/bittorrent"></a>BitTorrent<br />
+        patrick@bittorrent.com
+      </p>
+    </div>
+    <div class="contact">
+      <p>
+        <a href="http://github.com/pwmckenna/">github.com/pwmckenna</a><br />
+        <a href="https://twitter.com/intent/user?screen_name=pwmckenna">twitter.com/pwmckenna</a><br />
+        pwmckenna@gmail.com<br />
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ClickTale Bottom part -->
+<div id="ClickTaleDiv" style="display: none;"></div>
+<script type="text/javascript">
+if(document.location.protocol!='https:')
+  document.write(unescape("%3Cscript%20src='http://s.clicktale.net/WRb.js'%20type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+if(typeof ClickTale=='function') ClickTale(206,0.3,"www03");
+</script>
+<!-- ClickTale end of Bottom part -->
+
+<!-- Google Analytics -->
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+var pageTracker = _gat._getTracker("UA-31635554-1");
+pageTracker._trackPageview();
+</script>
+<!-- Google Analytics end -->
+
+</body>
+</html>
